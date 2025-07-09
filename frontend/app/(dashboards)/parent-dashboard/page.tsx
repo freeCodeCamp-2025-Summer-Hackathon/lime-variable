@@ -4,9 +4,12 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUser, logout } from '../../lib/auth';
 import {  User } from '../../types';
+import Modal from '@/app/components/modal';
 
 export default function ParentDashboard() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [openModal,setOpenModal] = useState(false)
+
 
   const router = useRouter();
 
@@ -26,6 +29,15 @@ export default function ParentDashboard() {
 
   if (!currentUser) return <div>Loading...</div>;
 
+  function isModalOpen() {
+    console.log('clicked')
+    setOpenModal(true)
+  }
+
+  function closeModal() {
+    setOpenModal(false)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -41,6 +53,7 @@ export default function ParentDashboard() {
           <div className="flex items-center space-x-4">
             <button
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
+              onClick={isModalOpen}
             >
               + Create Task
             </button>
@@ -53,6 +66,8 @@ export default function ParentDashboard() {
           </div>
         </div>
       </div>
+      {/* Modal */}
+      <Modal show={openModal} onClose={closeModal}/>
     </div>
   );
 }
