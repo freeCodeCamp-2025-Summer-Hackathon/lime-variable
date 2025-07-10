@@ -23,10 +23,13 @@ enum ChoreStatus {
 
 model Family {
   id        String   @id @default(uuid()) @db.Uuid
-  name      String   @unique
+  name      String
+  // optional for invites
+  code      String   @unique @default(uuid()) // or inviteLink String @unique
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  User      User[]
+  members   User[]
 
   @@map("families")
 }
@@ -38,13 +41,13 @@ model User {
   id             String   @id @default(uuid()) @db.Uuid
   name           String?
   email          String   @unique
-  password       String
+  passwordHash   String
   role           UserRole
-  points         Int
+  points         Int @default(0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-  family         Family   @relation(fields: [familyId], references: [id])
-  familyId       String   @db.Uuid
+  family         Family?  @relation(fields: [familyId], references: [id])
+  familyId       String?  @db.Uuid
   createdChores  Chore[]  @relation("CreatedByUser")
   assignedChores Chore[]  @relation("AssignedByUser")
   myChores       Chore[]  @relation("AssignedToUser")
@@ -52,13 +55,13 @@ model User {
   @@map("users")
 }
 
-// User can have many chores but a chore can have only one User 
+// User can have many chores but a chore can have only one User
 // User → Chores (one-to-many)
 
 model Chore {
   id            String      @id @default(uuid()) @db.Uuid
   title         String
-  desc          String?
+  description   String?
   dueDate       DateTime?
   points        Int
   status        ChoreStatus
