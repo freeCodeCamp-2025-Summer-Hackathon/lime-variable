@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getCurrentUser, logout } from '../../lib/auth';
+import { getCurrentUser, logout} from '../../lib/auth';
 import {  User } from '../../types';
 import Modal from '@/app/components/modal';
+import TaskForm from '@/app/components/task-form';
 
 export default function ParentDashboard() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -67,7 +68,9 @@ export default function ParentDashboard() {
         </div>
       </div>
       {/* Modal */}
-      <Modal show={openModal} onClose={closeModal}/>
+        <Modal show={openModal} onClose={closeModal}>
+          <TaskForm onCancel={closeModal}/>
+        </Modal>
     </div>
   );
 }
