@@ -1,9 +1,4 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-
-enum UserRole {
-  PARENT,
-  CHILD
-}
+import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class RegisterUserDto {
   @IsOptional()
@@ -16,8 +11,5 @@ export class RegisterUserDto {
 
   @IsString()
   @IsNotEmpty()
-  passwordHash!: string;
-
-  @IsEnum(UserRole)
-  role!: UserRole;
+  password!: string;
 }
