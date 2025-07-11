@@ -46,16 +46,7 @@ export class CreateChoreDto {
   })
   @IsNotEmpty({ message: 'Status cannot be empty' })
   status = ChoreStatus.PENDING;
-  //
-  @ApiProperty({
-    description: 'Assigned to user ID',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-    required: true,
-    type: String,
-  })
-  @IsUUID('all', { message: 'Assigned to must be a valid UUID' })
-  @IsNotEmpty({ message: 'Assigned to cannot be empty' })
-  assignedTo: string;
+
   //
   @ApiProperty({
     description: 'Assigned by user ID',
@@ -76,6 +67,17 @@ export class CreateChoreDto {
   })
   @IsUrl({}, { message: 'Image URL must be a valid URL' })
   proofPhotoUrl?: string;
+
+  //
+  @ApiProperty({
+    description: 'Assigned to user ID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    required: false,
+    type: String,
+  })
+  @IsUUID('all', { message: 'Assigned to must be a valid UUID' })
+  assignedTo?: string;
+
   //
   @ApiProperty({
     description: 'Due date for the chore',
