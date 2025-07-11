@@ -1,9 +1,9 @@
-import { ConflictException, Injectable } from '@nestjs/common';
-import { RegisterUserDto } from './dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { LoginDto, RegisterUserDto } from './dto';
 import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
 
 @Injectable()
@@ -45,6 +45,29 @@ export class AuthService {
       }
       throw new Error(error as any);
     }
+  }
+
+  async login({ email, password }: LoginDto) {
+
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email
+      }
+    });
+
+    if (!user) {
+      throw new NotFoundException(`No user found for email: ${email}`);
+    }
+
+    const passMatched = await argon.verify(user.passwordHash, password);
+    if (!passMatched) {
+      throw new ForbiddenException('Credentials incorrect');
+    }
+    const token = await this.generateAccessToken(user.id, user.email);
+
+    return {
+      'access_token': token
+    };
   }
 
   async generateAccessToken(
