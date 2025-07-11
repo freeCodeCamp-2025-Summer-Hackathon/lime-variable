@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsDate,
-  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsString,
@@ -10,7 +9,6 @@ import {
   IsUUID,
   MinLength,
 } from 'class-validator';
-import { ChoreStatus } from 'generated/prisma';
 
 export class CreateChoreDto {
   @ApiProperty({
@@ -33,19 +31,6 @@ export class CreateChoreDto {
   @IsNumber({}, { message: 'Points must be a number' })
   @IsNotEmpty({ message: 'Points cannot be empty' })
   points: number;
-  //
-  @ApiProperty({
-    description: 'Status of the chore',
-    example: ChoreStatus,
-    required: true,
-    enum: ChoreStatus,
-  })
-  @IsEnum(ChoreStatus, {
-    message:
-      'Status must be a valid enum value: either pending, submitted, approved, or rejected',
-  })
-  @IsNotEmpty({ message: 'Status cannot be empty' })
-  status = ChoreStatus.PENDING;
 
   //
   @ApiProperty({
