@@ -10,13 +10,8 @@ import {
   IsUUID,
   MinLength,
 } from 'class-validator';
+import { ChoreStatus } from 'generated/prisma';
 
-enum ChoreStatus {
-  PENDING = 'pending',
-  SUBMITTED = 'submitted',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
-}
 export class CreateChoreDto {
   @ApiProperty({
     description: 'Title of the chore',
@@ -41,11 +36,14 @@ export class CreateChoreDto {
   //
   @ApiProperty({
     description: 'Status of the chore',
-    example: ChoreStatus.PENDING,
+    example: ChoreStatus,
     required: true,
     enum: ChoreStatus,
   })
-  @IsEnum(ChoreStatus, { message: 'Status must be a valid enum value' })
+  @IsEnum(ChoreStatus, {
+    message:
+      'Status must be a valid enum value: either pending, submitted, approved, or rejected',
+  })
   @IsNotEmpty({ message: 'Status cannot be empty' })
   status = ChoreStatus.PENDING;
   //
