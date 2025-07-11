@@ -2,7 +2,6 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -10,8 +9,8 @@ async function bootstrap() {
   app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true
-    })
+      whitelist: true,
+    }),
   );
 
   const config = new DocumentBuilder()
@@ -21,7 +20,6 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
 
-  app.useGlobalPipes(new ValidationPipe());
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
 
