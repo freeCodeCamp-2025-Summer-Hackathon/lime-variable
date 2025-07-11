@@ -1,4 +1,9 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
@@ -12,7 +17,7 @@ export class AuthService {
     private prisma: PrismaService,
     private config: ConfigService,
     private jwt: JwtService,
-  ) { }
+  ) {}
 
   async registerUser(payload: RegisterUserDto) {
     const hashedPassword = await argon.hash(payload.password);
@@ -23,7 +28,7 @@ export class AuthService {
           passwordHash: hashedPassword,
           role: 'PARENT',
           email: payload.email,
-        }
+        },
       });
 
       const token = await this.generateAccessToken(user.id, user.email);
@@ -32,7 +37,7 @@ export class AuthService {
         id: user.id,
         name: user.name,
         email: user.email,
-        access_token: token
+        access_token: token,
       };
     } catch (error) {
       if (
@@ -43,16 +48,15 @@ export class AuthService {
           `Credentials taken: Email ${payload.email} already used`,
         );
       }
-      throw new Error(error as any);
+      throw error;
     }
   }
 
   async login({ email, password }: LoginDto) {
-
     const user = await this.prisma.user.findUnique({
       where: {
-        email
-      }
+        email,
+      },
     });
 
     if (!user) {
@@ -66,14 +70,11 @@ export class AuthService {
     const token = await this.generateAccessToken(user.id, user.email);
 
     return {
-      'access_token': token
+      access_token: token,
     };
   }
 
-  async generateAccessToken(
-    userId: string,
-    email: string,
-  ): Promise<string> {
+  async generateAccessToken(userId: string, email: string): Promise<string> {
     const payload = {
       sub: userId,
       email,
