@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { RegisterParentDto } from './dto';
+import { RegisterUserDto } from './dto';
 
 @Injectable()
 export class AuthService {
-  registerParent(dto: RegisterParentDto) {
+  registerUser(dto: RegisterUserDto) {
     return 'register Parent from service';
   }
 }

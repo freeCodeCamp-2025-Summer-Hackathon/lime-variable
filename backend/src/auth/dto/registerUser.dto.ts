@@ -5,23 +5,19 @@ enum UserRole {
   CHILD
 }
 
-export class RegisterParentDto {
+export class RegisterUserDto {
   @IsOptional()
   @IsString()
   name?: string;
 
   @IsEmail()
   @IsNotEmpty()
-  email: string;
+  email!: string;
 
   @IsString()
   @IsNotEmpty()
-  passwordHash: string;
+  passwordHash!: string;
 
   @IsEnum(UserRole)
-  role: UserRole;
-
-  @IsOptional()
-  @IsString()
-  familyId?: string;
+  role!: UserRole;
 }
