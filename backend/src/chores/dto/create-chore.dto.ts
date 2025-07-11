@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsDate,
   IsEnum,
@@ -27,7 +28,7 @@ export class CreateChoreDto {
   @MinLength(5, { message: 'Title must be at least 5 characters long' })
   @IsNotEmpty({ message: 'Title cannot be empty' })
   title: string;
-
+  //
   @ApiProperty({
     description: 'Points assigned to the chore',
     example: 10,
@@ -37,7 +38,7 @@ export class CreateChoreDto {
   @IsNumber({}, { message: 'Points must be a number' })
   @IsNotEmpty({ message: 'Points cannot be empty' })
   points: number;
-
+  //
   @ApiProperty({
     description: 'Status of the chore',
     example: ChoreStatus.PENDING,
@@ -47,7 +48,7 @@ export class CreateChoreDto {
   @IsEnum(ChoreStatus, { message: 'Status must be a valid enum value' })
   @IsNotEmpty({ message: 'Status cannot be empty' })
   status = ChoreStatus.PENDING;
-
+  //
   @ApiProperty({
     description: 'Assigned to user ID',
     example: '123e4567-e89b-12d3-a456-426614174000',
@@ -57,7 +58,7 @@ export class CreateChoreDto {
   @IsUUID('all', { message: 'Assigned to must be a valid UUID' })
   @IsNotEmpty({ message: 'Assigned to cannot be empty' })
   assignedTo: string;
-
+  //
   @ApiProperty({
     description: 'Assigned by user ID',
     example: '123e4567-e89b-12d3-a456-426614174001',
@@ -68,16 +69,6 @@ export class CreateChoreDto {
   @IsNotEmpty({ message: 'Assigned by cannot be empty' })
   assignedBy: string;
 
-  @ApiProperty({
-    description: 'Created by user ID',
-    example: '123e4567-e89b-12d3-a456-426614174002',
-    required: true,
-    type: String,
-  })
-  @IsUUID('all', { message: 'Created by must be a valid UUID' })
-  @IsNotEmpty({ message: 'Created by cannot be empty' })
-  createdBy: string;
-
   // Optional fields
   @ApiProperty({
     description: 'Proof photo URL',
@@ -87,25 +78,17 @@ export class CreateChoreDto {
   })
   @IsUrl({}, { message: 'Image URL must be a valid URL' })
   proofPhotoUrl?: string;
-
+  //
   @ApiProperty({
     description: 'Due date for the chore',
     example: '2023-12-31T23:59:59.999Z',
     required: false,
     type: String,
   })
-  @IsString({ message: 'Due date must be a string' })
-  dueDate?: string;
-
-  @ApiProperty({
-    description: 'Submitted at date',
-    example: '2023-12-01T12:00:00.000Z',
-    required: false,
-    type: String,
-  })
-  @IsDate({ message: 'Created at must be a valid date' })
-  submittedAt?: Date;
-
+  @IsDate({ message: 'Due date must be a valid date' })
+  @Type(() => Date)
+  dueDate?: Date;
+  //
   @ApiProperty({
     description: 'Description of the chore',
     example: 'Clean the kitchen thoroughly including dishes and floor',
@@ -114,7 +97,16 @@ export class CreateChoreDto {
   })
   @IsString({ message: 'Description must be a string' })
   description?: string;
-
+  @ApiProperty({
+    description: 'Submitted at date',
+    example: '2023-12-01T12:00:00.000Z',
+    required: false,
+    type: String,
+  })
+  @IsDate({ message: 'Submitted at must be a valid date' })
+  @Type(() => Date)
+  submittedAt?: Date;
+  //
   @ApiProperty({
     description: 'Approved at date',
     example: '2023-12-01T12:00:00.000Z',
@@ -122,8 +114,9 @@ export class CreateChoreDto {
     type: String,
   })
   @IsDate({ message: 'Approved at must be a valid date' })
+  @Type(() => Date)
   approvedAt?: Date;
-
+  //
   @ApiProperty({
     description: 'Rejected at date',
     example: '2023-12-01T12:00:00.000Z',
@@ -131,5 +124,6 @@ export class CreateChoreDto {
     type: String,
   })
   @IsDate({ message: 'Rejected at must be a valid date' })
+  @Type(() => Date)
   rejectedAt?: Date;
 }
