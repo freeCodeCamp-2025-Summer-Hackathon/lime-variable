@@ -4,6 +4,7 @@ import {
   IsDate,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   IsUrl,
   IsUUID,
@@ -32,17 +33,6 @@ export class CreateChoreDto {
   @IsNotEmpty({ message: 'Points cannot be empty' })
   points: number;
 
-  //
-  @ApiProperty({
-    description: 'Assigned by user ID',
-    example: '123e4567-e89b-12d3-a456-426614174001',
-    required: true,
-    type: String,
-  })
-  @IsUUID('all', { message: 'Assigned by must be a valid UUID' })
-  @IsNotEmpty({ message: 'Assigned by cannot be empty' })
-  assignedBy: string;
-
   // Optional fields
   @ApiProperty({
     description: 'Proof photo URL',
@@ -51,6 +41,7 @@ export class CreateChoreDto {
     type: String,
   })
   @IsUrl({}, { message: 'Image URL must be a valid URL' })
+  @IsOptional()
   proofPhotoUrl?: string;
 
   //
@@ -61,6 +52,7 @@ export class CreateChoreDto {
     type: String,
   })
   @IsUUID('all', { message: 'Assigned to must be a valid UUID' })
+  @IsOptional()
   assignedTo?: string;
 
   //
@@ -71,6 +63,7 @@ export class CreateChoreDto {
     type: String,
   })
   @IsDate({ message: 'Due date must be a valid date' })
+  @IsOptional()
   @Type(() => Date)
   dueDate?: Date;
   //
@@ -81,34 +74,6 @@ export class CreateChoreDto {
     type: String,
   })
   @IsString({ message: 'Description must be a string' })
+  @IsOptional()
   description?: string;
-  @ApiProperty({
-    description: 'Submitted at date',
-    example: '2023-12-01T12:00:00.000Z',
-    required: false,
-    type: String,
-  })
-  @IsDate({ message: 'Submitted at must be a valid date' })
-  @Type(() => Date)
-  submittedAt?: Date;
-  //
-  @ApiProperty({
-    description: 'Approved at date',
-    example: '2023-12-01T12:00:00.000Z',
-    required: false,
-    type: String,
-  })
-  @IsDate({ message: 'Approved at must be a valid date' })
-  @Type(() => Date)
-  approvedAt?: Date;
-  //
-  @ApiProperty({
-    description: 'Rejected at date',
-    example: '2023-12-01T12:00:00.000Z',
-    required: false,
-    type: String,
-  })
-  @IsDate({ message: 'Rejected at must be a valid date' })
-  @Type(() => Date)
-  rejectedAt?: Date;
 }
