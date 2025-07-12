@@ -41,11 +41,11 @@
   },
   "lint-staged": {
     "*.ts": [
-      "pnpm dlx eslint --config ./backend/eslint.config.mjs --fix",
-      "pnpm dlx prettier --write"
+      "pnpm --dir backend exec prettier --write",
+      "pnpm --dir backend exec eslint --config ./eslint.config.mjs --fix"
     ],
     "*.{md,json}": [
-      "pnpm dlx prettier --write"
+      "pnpm --dir backend exec prettier --write"
     ]
   },
   "devDependencies": {
