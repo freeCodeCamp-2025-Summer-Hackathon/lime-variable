@@ -18,7 +18,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "prepare": "husky"
+ "prepare": "cd ../ && husky backend/.husky"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -32,11 +32,21 @@
     "argon2": "^0.43.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
     "passport-jwt": "^4.0.1",
     "prisma": "^6.11.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "pnpm --dir backend exec prettier --write",
+      "pnpm --dir backend exec eslint --config ./eslint.config.mjs --fix"
+    ],
+    "*.{md,json}": [
+      "pnpm --dir backend exec prettier --write"
+    ]
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

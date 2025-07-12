@@ -48,7 +48,6 @@ export class AuthService {
           `Credentials taken: Email ${payload.email} already used`,
         );
       }
-
       throw error;
     }
   }
