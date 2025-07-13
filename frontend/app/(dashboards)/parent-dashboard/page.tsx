@@ -6,6 +6,7 @@ import { getCurrentUser, logout} from '../../lib/auth';
 import {  User } from '../../types';
 import Modal from '@/app/components/modal';
 import TaskForm from '@/app/components/task-form';
+import TasksWidget from '@/app/components/tasksWidget';
 
 export default function ParentDashboard() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -47,7 +48,9 @@ export default function ParentDashboard() {
           <div className="flex items-center space-x-4">
             <span className="text-2xl">{currentUser.avatar}</span>
             <div>
-              <h1 className="text-xl font-semibold text-gray-800">Parent Dashboard</h1>
+              <h1 className="text-xl font-semibold text-gray-800">
+                Parent Dashboard
+              </h1>
               <p className="text-gray-600">Welcome back, {currentUser.name}!</p>
             </div>
           </div>
@@ -71,6 +74,8 @@ export default function ParentDashboard() {
         <Modal show={openModal} onClose={closeModal}>
           <TaskForm onCancel={closeModal}/>
         </Modal>
+      {/* Task Widget */}
+      <TasksWidget />
     </div>
   );
 }
