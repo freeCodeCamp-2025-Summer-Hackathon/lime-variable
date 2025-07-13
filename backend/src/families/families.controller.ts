@@ -21,8 +21,8 @@ export class FamiliesController {
   constructor(private familyService: FamiliesService) {}
 
   @Post()
-  create(@Body() dto: CreateFamilyDto) {
-    return this.familyService.create(dto);
+  create(@GetUser('role') role: UserRole, @Body() dto: CreateFamilyDto) {
+    return this.familyService.create(role, dto);
   }
 
   @Get()
@@ -36,12 +36,16 @@ export class FamiliesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, dto: UpdateFamilyDto) {
-    return this.familyService.update(id, dto);
+  update(
+    @GetUser('role') role: UserRole,
+    @Param('id') id: string,
+    dto: UpdateFamilyDto,
+  ) {
+    return this.familyService.update(role, id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.familyService.remove(id);
+  remove(@GetUser('role') role: UserRole, @Param('id') id: string) {
+    return this.familyService.remove(role, id);
   }
 }
