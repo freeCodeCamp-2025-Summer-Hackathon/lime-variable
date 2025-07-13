@@ -13,4 +13,8 @@ export class PrismaService extends PrismaClient {
       },
     });
   }
+  async cleanDB() {
+    // ! MUST be in order bc of foreign key dependencies
+    await this.$transaction([this.chore.deleteMany(), this.user.deleteMany()]);
+  }
 }
