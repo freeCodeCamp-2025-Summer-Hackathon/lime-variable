@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { mockUsers, mockTasks as tasks } from '../lib/mockData';
+import { UserType, TaskType } from '../types';
 import {
   Clock,
   CheckCircle,
@@ -9,7 +9,13 @@ import {
   Award,
 } from 'lucide-react';
 
-const TasksWidget = () => {
+const TasksWidget = ({
+  tasks,
+  users,
+}: {
+  tasks: TaskType[];
+  users: UserType[];
+}) => {
   const [activeTab, setActiveTab] = useState('all');
 
   const filteredTasks =
@@ -19,7 +25,7 @@ const TasksWidget = () => {
   const submittedTasks = tasks.filter((task) => task.status === 'submitted');
 
   const getChildName = (childId: string) => {
-    const child = mockUsers.find((user) => user.id === childId);
+    const child = users.find((user) => user.id === childId);
     return child?.name ?? 'Unknown Child';
   };
 
@@ -116,7 +122,7 @@ const TasksWidget = () => {
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors cursor-pointer ${
                     activeTab === tab.key
                       ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'

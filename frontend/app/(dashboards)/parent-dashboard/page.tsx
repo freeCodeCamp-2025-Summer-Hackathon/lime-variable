@@ -2,16 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getCurrentUser, logout} from '../../lib/auth';
-import {  User } from '../../types';
+import { getCurrentUser, logout } from '../../lib/auth';
+import { UserType, TaskType } from '../../types';
 import Modal from '@/app/components/modal';
 import TaskForm from '@/app/components/task-form';
 import TasksWidget from '@/app/components/tasksWidget';
+import { mockUsers as users, mockTasks } from '../../lib/mockData';
 
 export default function ParentDashboard() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [openModal,setOpenModal] = useState(false)
-
+  const [currentUser, setCurrentUser] = useState<UserType | null>(null);
+  const [tasks, setTasks] = useState<TaskType[]>(mockTasks);
+  const [openModal, setOpenModal] = useState(false);
 
   const router = useRouter();
 
@@ -32,12 +33,12 @@ export default function ParentDashboard() {
   if (!currentUser) return <div>Loading...</div>;
 
   function isModalOpen() {
-    console.log('clicked')
-    setOpenModal(true)
+    console.log('clicked');
+    setOpenModal(true);
   }
 
   function closeModal() {
-    setOpenModal(false)
+    setOpenModal(false);
   }
 
   return (
@@ -71,11 +72,11 @@ export default function ParentDashboard() {
         </div>
       </div>
       {/* Modal */}
-        <Modal show={openModal} onClose={closeModal}>
-          <TaskForm onCancel={closeModal}/>
-        </Modal>
+      <Modal show={openModal} onClose={closeModal}>
+        <TaskForm onCancel={closeModal} />
+      </Modal>
       {/* Task Widget */}
-      <TasksWidget />
+      <TasksWidget tasks={tasks} users={users} />
     </div>
   );
 }
