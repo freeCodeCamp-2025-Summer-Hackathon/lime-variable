@@ -13,13 +13,6 @@ import Button from '@/app/components/ui/button';
 export default function ParentDashboard() {
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [tasks, setTasks] = useState<TaskType[]>(mockTasks);
-  const [newTask, setNewTask] = useState({
-    title: '',
-    description: '',
-    assignedTo: '',
-    points: 10,
-    dueDate: '',
-  });
   const [openModal, setOpenModal] = useState(false);
 
   const router = useRouter();
