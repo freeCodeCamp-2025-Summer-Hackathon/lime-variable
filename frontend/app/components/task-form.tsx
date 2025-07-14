@@ -1,134 +1,176 @@
 'use client';
 
-import { useState ,FormEvent ,useContext} from 'react';
-import { mockUsers } from '../lib/mockData';
+import { useState, FormEvent } from 'react';
 import { validateTaskDescription, validateTaskTitle } from '../lib/auth';
-
-
+import { UserType } from '../types';
+import Button from '../components/ui/button';
 
 type TaskFormProps = {
-    onCancel: () => void;
+  onCancel: () => void;
+  usersToAssignTo: UserType[];
+  onSubmit?: (taskData: {
+    title: string;
+    description: string;
+    assignedTo: string;
+    points: number;
+    dueDate: string;
+  }) => void;
 };
 
+export default function TaskForm({
+  onCancel,
+  onSubmit,
+  usersToAssignTo,
+}: TaskFormProps) {
+  const [taskTitle, setTaskTitle] = useState('');
+  const [taskDescription, setTaskDescription] = useState('');
+  const [assignedTo, setAssignedTo] = useState('');
+  const [points, setPoints] = useState(10);
+  const [error, setError] = useState('');
 
-export default function TaskForm({ onCancel }: TaskFormProps){
-    const [taskTitle,setTaskTitle] = useState('')
-    const [taskDescription,setTaskDescription] = useState('')
-    const [childRole,setChildRole] = useState('')
-    const [error,setError] = useState('')
-    const [number,setNumber] = useState(10)
-    const [openModal,setOpenModal] = useState(false)
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
 
+  // Format date to yyyy-mm-dd
+  const formatDate = (date: Date) => {
+    return date.toISOString().split('T')[0];
+  };
 
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-  
-    // Format date to yyyy-mm-dd
-    const formatDate = (date:any) => {
-      return date.toISOString().split('T')[0];
-    }
-  
-    const [dueDate, setDueDate] = useState(formatDate(tomorrow));
+  const [dueDate, setDueDate] = useState(formatDate(tomorrow));
 
-    function handleSubmit(e:FormEvent<HTMLFormElement>) {
-        e.preventDefault()
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
 
-        if (validateTaskTitle (taskTitle)){
-            setError(validateTaskTitle (taskTitle))
-            return
-        }
-
-        if (validateTaskDescription (taskDescription)){
-            setError(validateTaskDescription (taskDescription))
-            return
-        }
-
-        setTaskTitle('')
-        setTaskDescription('')
-        setChildRole('')
-        setDueDate(formatDate(tomorrow))
-        setNumber(10)
-        setError('')
+    // Validate task title
+    const titleError = validateTaskTitle(taskTitle);
+    if (titleError) {
+      setError(titleError);
+      return;
     }
 
-    function closeModal() {
-        setOpenModal(false)
+    // Validate task description
+    const descriptionError = validateTaskDescription(taskDescription);
+    if (descriptionError) {
+      setError(descriptionError);
+      return;
     }
 
-    return (
-            <form className='flex flex-col' onSubmit={(e) => handleSubmit(e)}>
-                <label className="font-medium">Task Title</label>
-                <input 
-                    type='text' 
-                    required 
-                    value={taskTitle}
-                    placeholder="Enter Task"
-                    className={`border  px-3 py-2 rounded-md mb-3 focus:outline-none focus:border-0 focus:ring-2 focus:ring-blue-500`}
-                    onChange={(e) => setTaskTitle(e.target.value)}
-                />
-                <label className="font-medium">Description</label>
-                <textarea 
-                    required 
-                    cols={30}
-                    rows={6}
-                    value = {taskDescription}
-                    placeholder ='Enter detailed instruction for completing the task'
-                    className ="border border-gray-800 p-2.5 rounded-md mb-3 focus:outline-none focus:border-0 focus:ring-2 focus:ring-blue-500"
-                    onChange = {(e) => setTaskDescription(e.target.value)}
-                >
-                </textarea>
-                 
-                <label className ="font-medium">Assign To</label>
-                <select 
-                    value ={childRole}
-                    name = 'child-roles'
-                    required
-                    onChange ={(e) => setChildRole(e.target.value)}
-                    className='border border-gray-800 p-2.5 rounded-md mb-3  focus:outline-none focus:border-0 focus:ring-2 focus:ring-blue-500'
-                >
-                    {mockUsers
-                    .filter((u) =>u.role === 'child')
-                    .map((child) => <option key ={child.id} value ={child.name} className ="flex items-center gap-2.5"> {child.avatar} {child.name}</option>) 
-                    }
-                    
-                </select>
-                <label className="font-medium">Points</label>
-                <input 
-                    type='number'
-                    required
-                    min={1}
-                    max={1000}
-                    value={number}
-                    onChange={(e) => setNumber( + e.target.value)}
-                    className="border p-2.5 border-gray-800 rounded-md mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-0"
-                />
-                <label className="font-medium">Due Date</label>
-                <input 
-                    type='date'
-                    required
-                    className="border p-2.5 border-gray-800 mb-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-0"
-                    value={dueDate}
-                    min={formatDate(today)}
-                    onChange={(e) => setDueDate(e.target.value)}
-                />
-                {error && <p className="text-center font-bold text-[16px] text-red-600">{error}</p>}
+    // Check if a child is assigned
+    if (!assignedTo) {
+      setError('Please select a child to assign the task to');
+      return;
+    }
 
-                <div className="flex items-center justify-center gap-2.5 my-2.5">
-                    <button
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
-                        type='submit'
-                    >
-                    + Create Task
-                    </button>
-                    <button
-                        className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
-                        onClick={onCancel}
-                    >
-                    Cancel
-                    </button>
-                </div>
+    // Call the onSubmit callback if provided
+    if (onSubmit) {
+      onSubmit({
+        title: taskTitle,
+        description: taskDescription,
+        assignedTo,
+        points,
+        dueDate,
+      });
+    }
 
-            </form>
-    )
+    // Reset form
+    setTaskTitle('');
+    setTaskDescription('');
+    setAssignedTo('');
+    setPoints(10);
+    setDueDate(formatDate(tomorrow));
+    setError('');
+
+    // Close the modal
+    onCancel();
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Task Title
+        </label>
+        <input
+          type="text"
+          value={taskTitle}
+          onChange={(e) => setTaskTitle(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Description
+        </label>
+        <textarea
+          value={taskDescription}
+          onChange={(e) => setTaskDescription(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          rows={3}
+          required
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Assign To
+        </label>
+        <select
+          value={assignedTo}
+          onChange={(e) => setAssignedTo(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+        >
+          <option value="">Select a child</option>
+          {usersToAssignTo.map((child) => (
+            <option key={child.id} value={child.id}>
+              {child.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Points
+        </label>
+        <input
+          type="number"
+          value={points}
+          onChange={(e) => setPoints(parseInt(e.target.value) || 0)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          min="1"
+          required
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Due Date
+        </label>
+        <input
+          type="date"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+        />
+      </div>
+
+      <div className="flex space-x-3 pt-4">
+        <Button>+ Create Task</Button>
+        <Button variant="secondary" onClick={onCancel}>
+          Cancel
+        </Button>
+      </div>
+    </form>
+  );
 }

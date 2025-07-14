@@ -8,10 +8,18 @@ import Modal from '@/app/components/modal';
 import TaskForm from '@/app/components/task-form';
 import TasksWidget from '@/app/components/tasksWidget';
 import { mockUsers as users, mockTasks } from '../../lib/mockData';
+import Button from '@/app/components/ui/button';
 
 export default function ParentDashboard() {
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [tasks, setTasks] = useState<TaskType[]>(mockTasks);
+  const [newTask, setNewTask] = useState({
+    title: '',
+    description: '',
+    assignedTo: '',
+    points: 10,
+    dueDate: '',
+  });
   const [openModal, setOpenModal] = useState(false);
 
   const router = useRouter();
@@ -32,11 +40,6 @@ export default function ParentDashboard() {
 
   if (!currentUser) return <div>Loading...</div>;
 
-  function isModalOpen() {
-    console.log('clicked');
-    setOpenModal(true);
-  }
-
   function closeModal() {
     setOpenModal(false);
   }
@@ -56,25 +59,43 @@ export default function ParentDashboard() {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <button
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
-              onClick={isModalOpen}
-            >
+            <Button className="flex-1" onClick={() => setOpenModal(true)}>
               + Create Task
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleLogout}
               className="text-gray-600 hover:text-gray-800 transition-colors cursor-pointer"
+              variant="ghost"
             >
               Logout
-            </button>
+            </Button>
           </div>
         </div>
       </div>
       {/* Modal */}
-      <Modal show={openModal} onClose={closeModal}>
-        <TaskForm onCancel={closeModal} />
-      </Modal>
+      {openModal && (
+        <Modal onClose={closeModal}>
+          <TaskForm
+            onCancel={closeModal}
+            usersToAssignTo={users.filter((user) => user.role === 'child')}
+            onSubmit={(taskData) => {
+              const newTask: TaskType = {
+                id: Date.now().toString(),
+                title: taskData.title,
+                description: taskData.description,
+                assignedTo: taskData.assignedTo,
+                assignedBy: currentUser.id,
+                points: taskData.points,
+                dueDate: taskData.dueDate,
+                status: 'pending',
+                createdAt: new Date().toISOString(),
+              };
+
+              setTasks((prevTasks) => [...prevTasks, newTask]);
+            }}
+          />
+        </Modal>
+      )}
       {/* Task Widget */}
       <TasksWidget tasks={tasks} users={users} />
     </div>
