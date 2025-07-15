@@ -61,6 +61,86 @@ $ pnpm run test:e2e
 $ pnpm run test:cov
 ```
 
+## Docker & Database Setup
+
+This project uses Docker Compose to run a local PostgreSQL database for development.
+
+### Start PostgreSQL with Docker Compose
+
+1. Make sure you have [Docker](https://www.docker.com/products/docker-desktop/) installed and running.
+2. Create a `.env.development`, `.env.test`, or `.env.production` file in the `backend` directory with the following example content using the ".env.example":
+
+   ```env
+   # Example for .env.development
+   POSTGRES_USER=sample
+   POSTGRES_PASSWORD=sample
+   POSTGRES_DB=sample
+   DOCKER_PORT=5431
+   # For test: DOCKER_PORT=5432, for prod: DOCKER_PORT=5433 (or any free port)
+   ```
+
+3. To start the database for a specific environment, run one of the following in the `backend` directory:
+
+   **Development:**
+
+   ```bash
+   docker compose -f docker-compose.dev.yml --env-file .env.development up -d
+   ```
+
+   or
+
+   ```bash
+   pnpm docker:dev:up
+   ```
+
+   **Test:**
+
+   ```bash
+   docker compose -f docker-compose.test.yml --env-file .env.test up -d
+   ```
+
+   or
+
+   ```bash
+   pnpm docker:test:up
+   ```
+
+   **Production:**
+
+   ```bash
+   docker compose -f docker-compose.prod.yml --env-file .env.production up -d
+   ```
+
+   or
+
+   ```bash
+   pnpm docker:prod:up
+   ```
+
+   This will start a PostgreSQL database on the port specified by `DOCKER_PORT` in your `.env` file, mapped to 5432 in the container.
+
+4. The database will be initialized using the `init-db.sql` script if present.
+
+## Quick Start (Development)
+
+To launch both the backend and the database in development mode with a single command:
+
+1. Make sure you have created a `.env.development` file as described above.
+2. In the `backend` directory, run:
+
+   ```bash
+   pnpm docker:start:dev
+   ```
+
+This will:
+
+- Start the PostgreSQL database using Docker Compose
+- Push the latest Prisma schema to the database
+- Generate the Prisma client
+- Start the NestJS backend in development mode
+
+---
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.

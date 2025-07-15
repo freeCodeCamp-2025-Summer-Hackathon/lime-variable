@@ -17,7 +17,6 @@
     "noImplicitAny": true,
     "strictBindCallApply": true,
     "noFallthroughCasesInSwitch": true,
-    "allowJs": true,
     "paths": {
       "src/*": ["src/*"],
       "test/*": ["test/*"],
