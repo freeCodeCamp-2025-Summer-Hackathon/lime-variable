@@ -5,6 +5,7 @@ import { ChoresModule } from './chores/chores.module';
 
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { FamiliesModule } from './families/families.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { PrismaModule } from './prisma/prisma.module';
     }),
     PrismaModule,
     AuthModule,
+    FamiliesModule,
     ChoresModule,
   ],
 })

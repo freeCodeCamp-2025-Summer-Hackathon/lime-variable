@@ -1,6 +1,6 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { AuthenticatedUser } from '../interfaces';
 import { Request } from 'express';
+import { AuthenticatedUser } from '../interfaces/authenticated-user.interface';
 
 export const GetUser = createParamDecorator(
   <T extends keyof AuthenticatedUser | undefined = undefined>(
