@@ -8,8 +8,9 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { LoginDto, RegisterUserDto } from './dto/auth.dto';
 import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
+import { RegisterUserDto } from './dto/register-user.dto';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {

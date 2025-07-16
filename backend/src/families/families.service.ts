@@ -22,15 +22,6 @@ export class FamiliesService {
     return this.prisma.family.create({ data: dto });
   }
 
-  async findAll(role: UserRole) {
-    if (role === 'CHILD') {
-      throw new UnauthorizedException(
-        'Only Parents are allowed to view all families',
-      );
-    }
-    return this.prisma.family.findMany();
-  }
-
   async findOne(id: string) {
     const family = await this.prisma.family.findUnique({ where: { id } });
     if (!family) {
