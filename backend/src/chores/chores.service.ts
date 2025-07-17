@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ChoreStatus, User } from 'generated/prisma';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateChoreDto } from './dto/create-chore.dto';
@@ -34,18 +39,41 @@ export class ChoresService {
 
     return createdChore;
   }
+  // TODO: add filter and f=remove user
+  async findAll(user: User) {
+    const allChores = await this.prisma.chore.findMany({
+      where: { createdBy: user.id },
+    });
 
-  findAll() {
-    return `This action returns all chores`;
+    return allChores;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} chore`;
+  async findOne(choreId: string, userId: string) {
+    const chore = await this.prisma.chore.findUnique({
+      where: { id: choreId },
+    });
+
+    if (!chore) throw new NotFoundException('Chore does not exist');
+
+    if (userId !== chore.createdBy || userId !== chore.assignedTo)
+      throw new UnauthorizedException(
+        'You do not have access to this resource',
+      );
+
+    return chore;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  update(id: number, updateChoreDto: UpdateChoreDto) {
-    return `This action updates a #${id} chore`;
+  async update(choreId: string, updateChoreDto: UpdateChoreDto, userId) {
+    const chore = await this.prisma.chore.update({
+      where: {
+        id: choreId,
+      },
+      // ! check if more props are added
+      data: updateChoreDto,
+    });
+
+    return chore;
   }
 
   remove(id: number) {

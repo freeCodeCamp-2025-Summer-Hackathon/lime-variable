@@ -26,18 +26,22 @@ export class ChoresController {
   }
 
   @Get()
-  findAll() {
-    return this.choresService.findAll();
+  findAll(@GetUser() user: User) {
+    return this.choresService.findAll(user);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.choresService.findOne(+id);
+  findOne(@Param('id') choreId: string, @GetUser('id') userId: string) {
+    return this.choresService.findOne(userId, choreId);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateChoreDto: UpdateChoreDto) {
-    return this.choresService.update(+id, updateChoreDto);
+  update(
+    @Param('id') choreId: string,
+    @Body() updateChoreDto: UpdateChoreDto,
+    @GetUser('id') userId: string,
+  ) {
+    return this.choresService.update(choreId, updateChoreDto, userId);
   }
 
   @Delete(':id')
