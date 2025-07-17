@@ -27,7 +27,7 @@ export class RegisterResponseDto {
 
   @IsOptional()
   @IsString()
-  name?: string;
+  name: string | null;
 
   @IsEmail()
   @IsNotEmpty()

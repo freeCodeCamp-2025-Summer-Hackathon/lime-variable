@@ -56,6 +56,6 @@ export class FamiliesService {
     if (!family) {
       throw new NotFoundException(`Family with ID "${id}" not found`);
     }
-    return this.prisma.family.delete({ where: { id } });
+    await this.prisma.family.delete({ where: { id } });
   }
 }
