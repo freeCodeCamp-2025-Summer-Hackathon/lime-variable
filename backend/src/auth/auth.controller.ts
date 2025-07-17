@@ -10,8 +10,8 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { RegisterResponseDto, RegisterUserDto } from './dto/register-user.dto';
-import { LoginDto, LoginResponseDto } from './dto/login.dto';
+import { RegisterUserDto } from './dto/register-user.dto';
+import { LoginDto } from './dto/login.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -26,7 +26,6 @@ export class AuthController {
   })
   @ApiCreatedResponse({
     description: 'The account has been successfully created.',
-    type: RegisterResponseDto,
   })
   @ApiConflictResponse({ description: 'Email already used.' })
   registerUser(@Body() dto: RegisterUserDto) {
@@ -36,7 +35,7 @@ export class AuthController {
   @Post('login')
   @HttpCode(200)
   @ApiBody({ type: LoginDto })
-  @ApiOkResponse({ description: 'Login successful.', type: LoginResponseDto })
+  @ApiOkResponse({ description: 'Login successful.' })
   @ApiNotFoundResponse({ description: 'Account not found.' })
   @ApiForbiddenResponse({ description: 'Credentials incorrect' })
   login(@Body() dto: LoginDto) {
