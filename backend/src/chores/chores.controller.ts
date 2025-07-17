@@ -45,7 +45,7 @@ export class ChoresController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.choresService.remove(+id);
+  remove(@Param('id') id: string, @GetUser() user: User) {
+    return this.choresService.remove(id, user);
   }
 }

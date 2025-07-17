@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -39,7 +40,7 @@ export class ChoresService {
 
     return createdChore;
   }
-  // TODO: add filter and f=remove user
+  // ! add filter and f=remove user
   async findAll(user: User) {
     const allChores = await this.prisma.chore.findMany({
       where: { createdBy: user.id },
@@ -63,9 +64,24 @@ export class ChoresService {
     return chore;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async update(choreId: string, updateChoreDto: UpdateChoreDto, userId) {
-    const chore = await this.prisma.chore.update({
+  async update(
+    choreId: string,
+    updateChoreDto: UpdateChoreDto,
+    userId: User['id'],
+  ) {
+    const chore = await this.prisma.chore.findUnique({
+      where: {
+        id: choreId,
+      },
+    });
+    if (!chore) throw new BadRequestException('Resource not found');
+
+    if (chore?.createdBy !== userId)
+      throw new ForbiddenException(
+        'You do not have permission to update the resource',
+      );
+
+    const updatedChore = await this.prisma.chore.update({
       where: {
         id: choreId,
       },
@@ -73,10 +89,24 @@ export class ChoresService {
       data: updateChoreDto,
     });
 
-    return chore;
+    return updatedChore;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} chore`;
+  async remove(id: string, user: User) {
+    if (user.role === 'CHILD') {
+      throw new ForbiddenException(
+        'You do not have permission to delete the resource',
+      );
+    }
+    const chore = await this.prisma.chore.findUnique({
+      where: { id },
+    });
+
+    if (!chore) throw new BadRequestException('Resource not found');
+
+    if (chore.createdBy !== user.id)
+      throw new ForbiddenException(
+        'You do not have permission to delete the resource',
+      );
   }
 }
