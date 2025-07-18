@@ -80,6 +80,7 @@ export class ChoresService {
       throw new ForbiddenException(
         'You do not have permission to update the resource',
       );
+    // TODO: remove id and createdby  and other backend props before updating
 
     const updatedChore = await this.prisma.chore.update({
       where: {
@@ -108,5 +109,8 @@ export class ChoresService {
       throw new ForbiddenException(
         'You do not have permission to delete the resource',
       );
+    await this.prisma.chore.delete({
+      where: { id },
+    });
   }
 }
