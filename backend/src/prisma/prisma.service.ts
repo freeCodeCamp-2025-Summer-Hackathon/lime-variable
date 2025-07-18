@@ -50,16 +50,27 @@ export class PrismaService extends PrismaClient {
     });
 
     // Create a chore assigned to the child
-    await this.chore.create({
-      data: {
-        title: 'Test Chore',
-        description: 'Seed chore for testing',
-        points: 10,
-        status: ChoreStatus.PENDING,
-        createdBy: parent.id,
-        assignedBy: parent.id,
-        assignedTo: child.id,
-      },
+    await this.chore.createMany({
+      data: [
+        {
+          title: 'Test Chore',
+          description: 'Seed chore for testing',
+          points: 10,
+          status: ChoreStatus.PENDING,
+          createdBy: parent.id,
+          assignedBy: parent.id,
+          assignedTo: child.id,
+        },
+        {
+          title: 'Test Chore 2',
+          description: 'Seed chore for testing 2',
+          points: 10,
+          status: ChoreStatus.PENDING,
+          createdBy: parent.id,
+          assignedBy: parent.id,
+          assignedTo: child.id,
+        },
+      ],
     });
   }
 }
