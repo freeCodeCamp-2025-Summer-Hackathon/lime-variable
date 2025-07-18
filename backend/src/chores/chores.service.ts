@@ -49,14 +49,14 @@ export class ChoresService {
     return allChores;
   }
 
-  async findOne(choreId: string, userId: string) {
+  async findOne(userId: string, choreId: string) {
     const chore = await this.prisma.chore.findUnique({
       where: { id: choreId },
     });
 
     if (!chore) throw new NotFoundException('Chore does not exist');
 
-    if (userId !== chore.createdBy || userId !== chore.assignedTo)
+    if (userId !== chore.createdBy)
       throw new UnauthorizedException(
         'You do not have access to this resource',
       );
