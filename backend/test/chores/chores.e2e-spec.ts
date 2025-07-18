@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { ChoreStatus } from 'generated/prisma';
 import * as pactum from 'pactum';
 import { AuthService } from 'src/auth/auth.service';
 import { ChoresModule } from 'src/chores/chores.module';
@@ -31,6 +32,7 @@ describe('Chores', () => {
     expect(app.get(ChoresModule)).toBeDefined();
   });
 
+  const fakeUuid = '11111111-1111-1111-1111-111111111111';
   describe('/chores POST', () => {
     const choreMockData = {
       title: 'hello',
@@ -88,7 +90,6 @@ describe('Chores', () => {
           });
       });
       it('should not create for if assignedTo is not a user', () => {
-        const fakeUuid = '11111111-1111-1111-1111-111111111111';
         const incorrectAssignedToMockData = {
           ...choreMockData,
           assignedTo: fakeUuid,
@@ -104,6 +105,119 @@ describe('Chores', () => {
             statusCode: 400,
           });
       });
+    });
+  });
+  describe('/chores GET', () => {
+    describe('Success Cases', () => {
+      it('should get all chores', () => {
+        return pactum
+          .spec()
+          .get('/chores')
+          .expectStatus(200)
+          .expectJsonLike([
+            {
+              title: 'Test Chore',
+              description: 'Seed chore for testing',
+              points: 10,
+              status: ChoreStatus.PENDING,
+            },
+            {
+              title: 'Test Chore 2',
+              description: 'Seed chore for testing 2',
+              points: 10,
+              status: ChoreStatus.PENDING,
+            },
+          ]);
+      });
+      it('should get one chore', async () => {
+        const chore = await prisma.chore.findFirst();
+        if (!chore) return;
+
+        return pactum
+          .spec()
+          .get(`/chores/${chore.id}`)
+          .expectStatus(200)
+          .expectJsonMatch({
+            id: chore.id,
+            title: chore.title,
+            description: chore.description,
+            points: chore.points,
+            status: chore.status,
+            createdBy: chore.createdBy,
+            assignedBy: chore.assignedBy,
+            assignedTo: chore.assignedTo,
+          });
+      });
+    });
+    describe('Failure Cases', () => {
+      it('should send not found status', async () => {
+        return pactum.spec().get(`/chores/${fakeUuid}`).expectStatus(404);
+      });
+      it('should send not found status', async () => {
+        pactum.request.removeDefaultHeaders();
+
+        return pactum.spec().get(`/chores/${fakeUuid}`).expectStatus(401);
+      });
+    });
+  });
+  describe('/chores:id Update', () => {
+    describe('Success Cases', () => {
+      it('should update one chore', async () => {
+        const chore = await prisma.chore.findFirst();
+        if (!chore) return;
+
+        return pactum
+          .spec()
+          .patch(`/chores/${chore.id}`)
+          .withBody({
+            title: 'changed title',
+          })
+          .expectStatus(200)
+          .expectJsonMatch({
+            id: chore.id,
+            title: 'changed title',
+            description: chore.description,
+            points: chore.points,
+            status: chore.status,
+            createdBy: chore.createdBy,
+            assignedBy: chore.assignedBy,
+            assignedTo: chore.assignedTo,
+          });
+      });
+    });
+    describe('Failure Cases', () => {
+      // TODO: Need to be fixed in the second iteration
+      it.skip('Need attention:should not update id', async () => {
+        const chore = await prisma.chore.findFirst();
+        if (!chore) throw new Error();
+
+        return pactum
+          .spec()
+          .patch(`/chores/${chore.id}`)
+          .withBody({
+            id: fakeUuid,
+          })
+          .expectStatus(401)
+          .expectJsonMatch({
+            id: chore.id,
+            title: chore.title,
+            description: chore.description,
+            points: chore.points,
+            status: chore.status,
+            createdBy: chore.createdBy,
+            assignedBy: chore.assignedBy,
+            assignedTo: chore.assignedTo,
+          });
+      });
+    });
+  });
+  // TODO: add failure case if the delete was initiated by user who didnot created it
+  describe('/chores:id Remove', () => {
+    it('should delete a chore', async () => {
+      const chore = await prisma.chore.findFirst();
+      if (!chore) throw new Error();
+      await pactum.spec().delete(`/chores/${chore.id}`);
+      return pactum.spec().get(`/chores/${chore.id}`).expectStatus(404);
     });
   });
 });
