@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { ChoreStatus, User } from 'generated/prisma';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { AssignChoreDto } from './dto/assign-chore.dto';
 import { CreateChoreDto } from './dto/create-chore.dto';
 import { UpdateChoreDto } from './dto/update-chore.dto';
 
@@ -16,12 +17,17 @@ export class ChoresService {
   constructor(private prisma: PrismaService) {}
   async create(createChoreDto: CreateChoreDto, user: User) {
     try {
+      if (!user.familyId)
+        throw new BadRequestException(
+          'You must have a family to create a chore',
+        );
       const updatedChoreDto = {
         ...createChoreDto,
         createdBy: user.id,
         status: ChoreStatus.PENDING,
         assignedTo: createChoreDto.assignedTo || null,
         assignedBy: user.id,
+        familyId: user.familyId,
       };
       if (createChoreDto.assignedTo) {
         const assignedUser = await this.prisma.user.findUnique({
@@ -38,7 +44,8 @@ export class ChoresService {
         data: updatedChoreDto,
       });
 
-      if (!createdChore) throw new Error('Chore could not be created');
+      if (!createdChore)
+        throw new InternalServerErrorException('Chore could not be created');
 
       return createdChore;
     } catch (error) {
@@ -49,6 +56,51 @@ export class ChoresService {
       });
     }
   }
+
+  async assign(
+    choreId: string,
+    userToBeAssigned: AssignChoreDto['assignedTo'],
+    user: User,
+  ) {
+    try {
+      const chore = await this.prisma.chore.findUnique({
+        where: { id: choreId },
+      });
+
+      if (!chore) throw new NotFoundException('Chore does not exist');
+
+      if (user.familyId !== chore.familyId || user.role === 'CHILD')
+        throw new UnauthorizedException(
+          'You do not have access to this resource',
+        );
+
+      const assignedUser = await this.prisma.user.findUnique({
+        where: { id: userToBeAssigned },
+      });
+
+      if (!assignedUser)
+        throw new BadRequestException('Assigned user not found');
+
+      const updatedChore = await this.prisma.chore.update({
+        where: { id: choreId },
+        data: { assignedTo: assignedUser.id },
+      });
+
+      return updatedChore;
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof UnauthorizedException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Chore could not be assigned', {
+        cause: error,
+      });
+    }
+  }
+
   // ! add filter and f=remove user
   async findAll(user: User) {
     try {

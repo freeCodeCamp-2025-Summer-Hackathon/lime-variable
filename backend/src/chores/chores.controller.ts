@@ -12,6 +12,7 @@ import { User } from 'generated/prisma';
 import { GetUser } from 'src/auth/decorator/get-user.decorator';
 import { JwtGuard } from 'src/auth/guard/jwt.guard';
 import { ChoresService } from './chores.service';
+import { AssignChoreDto } from './dto/assign-chore.dto';
 import { CreateChoreDto } from './dto/create-chore.dto';
 import { UpdateChoreDto } from './dto/update-chore.dto';
 
@@ -23,6 +24,15 @@ export class ChoresController {
   @Post()
   create(@Body() createChoreDto: CreateChoreDto, @GetUser() user: User) {
     return this.choresService.create(createChoreDto, user);
+  }
+
+  @Patch(':id/assign')
+  assign(
+    @Param('id') choreId: string,
+    @Body('assignedTo') userToBeAssigned: AssignChoreDto['assignedTo'],
+    @GetUser() user: User,
+  ) {
+    return this.choresService.assign(choreId, userToBeAssigned, user);
   }
 
   @Get()
