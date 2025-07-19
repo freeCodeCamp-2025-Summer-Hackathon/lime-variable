@@ -101,6 +101,38 @@ export class ChoresService {
     }
   }
 
+  async submit(choreId: string, userId: string) {
+    try {
+      const chore = await this.prisma.chore.findUnique({
+        where: { id: choreId },
+      });
+
+      if (!chore) throw new NotFoundException('Chore does not exist');
+
+      if (userId !== chore.assignedTo)
+        throw new UnauthorizedException(
+          'You do not have access to this resource',
+        );
+
+      const updatedChore = await this.prisma.chore.update({
+        where: { id: choreId },
+        data: { status: ChoreStatus.SUBMITTED, submittedAt: new Date() },
+      });
+
+      return updatedChore;
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof UnauthorizedException
+      ) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Chore could not be submitted', {
+        cause: error,
+      });
+    }
+  }
+
   // ! add filter and f=remove user
   async findAll(user: User) {
     try {

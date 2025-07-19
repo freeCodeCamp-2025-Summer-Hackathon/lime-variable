@@ -8,13 +8,13 @@ import { closeApp, initApp } from 'test/setup';
 describe('Chores', () => {
   let app: INestApplication;
   let prisma: PrismaService;
-
+  let authService: AuthService;
   beforeEach(async () => {
     const appInit = await initApp();
     app = appInit.app;
     prisma = appInit.prisma;
 
-    const authService = app.get(AuthService);
+    authService = app.get(AuthService);
     const token = await authService.login({
       email: 'parent@example.com',
       password: 'parentpassword',
@@ -205,6 +205,33 @@ describe('Chores', () => {
             assignedBy: chore.assignedBy,
             assignedTo: user.id,
           });
+      });
+      it('should submit a chore', async () => {
+        const chore = await prisma.chore.findFirst();
+        if (!chore) return;
+        pactum.request.removeDefaultHeaders('Authorization');
+        const token = await authService.login({
+          email: 'child@example.com',
+          password: 'childpassword',
+        });
+        pactum.request.setDefaultHeaders({
+          Authorization: `Bearer ${token.access_token}`,
+        });
+        return pactum
+          .spec()
+          .patch(`/chores/${chore.id}/submit`)
+          .expectStatus(200)
+          .expectJsonMatch({
+            id: chore.id,
+            title: chore.title,
+            description: chore.description,
+            points: chore.points,
+            status: ChoreStatus.SUBMITTED,
+            createdBy: chore.createdBy,
+            assignedBy: chore.assignedBy,
+            assignedTo: chore.assignedTo,
+          })
+          .inspect();
       });
     });
     describe('Failure Cases', () => {

@@ -35,6 +35,11 @@ export class ChoresController {
     return this.choresService.assign(choreId, userToBeAssigned, user);
   }
 
+  @Patch(':id/submit')
+  submit(@Param('id') choreId: string, @GetUser('id') userId: string) {
+    return this.choresService.submit(choreId, userId);
+  }
+
   @Get()
   findAll(@GetUser() user: User) {
     return this.choresService.findAll(user);
