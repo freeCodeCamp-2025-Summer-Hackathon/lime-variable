@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { ChoreStatus, User } from 'generated/prisma';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ApprovalChoreDto } from './dto/approve-chore.dto';
 import { AssignChoreDto } from './dto/assign-chore.dto';
 import { CreateChoreDto } from './dto/create-chore.dto';
 import { UpdateChoreDto } from './dto/update-chore.dto';
@@ -96,6 +97,53 @@ export class ChoresService {
         throw error;
       }
       throw new InternalServerErrorException('Chore could not be assigned', {
+        cause: error,
+      });
+    }
+  }
+  async approve(
+    choreId: string,
+    user: User,
+    status: ApprovalChoreDto['status'],
+  ) {
+    try {
+      const chore = await this.prisma.chore.findUnique({
+        where: { id: choreId },
+      });
+      if (!chore) throw new NotFoundException('Chore does not exist');
+
+      if (user.familyId !== chore.familyId || user.role === 'CHILD')
+        throw new UnauthorizedException(
+          'You do not have access to this resource',
+        );
+      if (chore.status !== ChoreStatus.SUBMITTED)
+        throw new BadRequestException(
+          'Chore must be submitted before approval',
+        );
+      const updateValues: Record<string, string | Date> = { status };
+
+      if (status === 'APPROVED') {
+        updateValues.approvedAt = new Date();
+      }
+
+      if (status === 'REJECTED') {
+        updateValues.rejectedAt = new Date();
+      }
+      const updatedChore = await this.prisma.chore.update({
+        where: { id: choreId },
+        data: updateValues,
+      });
+
+      return updatedChore;
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof UnauthorizedException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Chore could not be approved', {
         cause: error,
       });
     }

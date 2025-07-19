@@ -44,7 +44,7 @@ describe('Chores', () => {
         return pactum
           .spec()
           .post('/chores')
-          .withBody(choreMockData)
+          .withJson(choreMockData)
           .expectStatus(201)
           .expectJsonLike({
             title: 'hello',
@@ -67,7 +67,7 @@ describe('Chores', () => {
         return pactum
           .spec()
           .post('/chores')
-          .withBody(choreMockDataWithAssignTo)
+          .withJson(choreMockDataWithAssignTo)
           .expectStatus(201)
           .expectJsonLike({
             title: 'hello',
@@ -82,7 +82,7 @@ describe('Chores', () => {
         return pactum
           .spec()
           .post('/chores')
-          .withBody(choreMockData)
+          .withJson(choreMockData)
           .expectStatus(401)
           .expectBody({
             message: 'Unauthorized',
@@ -97,7 +97,7 @@ describe('Chores', () => {
         return pactum
           .spec()
           .post('/chores')
-          .withBody(incorrectAssignedToMockData)
+          .withJson(incorrectAssignedToMockData)
           .expectStatus(400);
       });
     });
@@ -157,14 +157,14 @@ describe('Chores', () => {
   });
   describe('/chores:id PATCH', () => {
     describe('Success Cases', () => {
-      it('should update one chore', async () => {
+      it('should update one chore ', async () => {
         const chore = await prisma.chore.findFirst();
         if (!chore) return;
 
         return pactum
           .spec()
           .patch(`/chores/${chore.id}`)
-          .withBody({
+          .withJson({
             title: 'changed title',
           })
           .expectStatus(200)
@@ -191,7 +191,7 @@ describe('Chores', () => {
         return pactum
           .spec()
           .patch(`/chores/${chore.id}/assign`)
-          .withBody({
+          .withJson({
             assignedTo: user.id,
           })
           .expectStatus(200)
@@ -206,7 +206,52 @@ describe('Chores', () => {
             assignedTo: user.id,
           });
       });
-      it('should submit a chore', async () => {
+      it('should approve a chore /approval', async () => {
+        const choreSub = await prisma.chore.findFirst();
+        if (!choreSub) return;
+        pactum.request.removeDefaultHeaders('Authorization');
+        const tokenChild = await authService.login({
+          email: 'child@example.com',
+          password: 'childpassword',
+        });
+        pactum.request.setDefaultHeaders({
+          Authorization: `Bearer ${tokenChild.access_token}`,
+        });
+        await pactum.spec().patch(`/chores/${choreSub.id}/submit`);
+
+        const chore = await prisma.chore.findFirst({
+          where: {
+            id: choreSub.id,
+          },
+        });
+        if (!chore) return;
+        pactum.request.removeDefaultHeaders('Authorization');
+        const token = await authService.login({
+          email: 'parent@example.com',
+          password: 'parentpassword',
+        });
+        pactum.request.setDefaultHeaders({
+          Authorization: `Bearer ${token.access_token}`,
+        });
+        return pactum
+          .spec()
+          .patch(`/chores/${chore.id}/approval`)
+          .withJson({
+            status: 'APPROVED',
+          })
+          .expectStatus(200)
+          .expectJsonMatch({
+            id: chore.id,
+            title: chore.title,
+            description: chore.description,
+            points: chore.points,
+            status: ChoreStatus.APPROVED,
+            createdBy: chore.createdBy,
+            assignedBy: chore.assignedBy,
+            assignedTo: chore.assignedTo,
+          });
+      });
+      it('should submit a chore /submit', async () => {
         const chore = await prisma.chore.findFirst();
         if (!chore) return;
         pactum.request.removeDefaultHeaders('Authorization');
@@ -230,12 +275,10 @@ describe('Chores', () => {
             createdBy: chore.createdBy,
             assignedBy: chore.assignedBy,
             assignedTo: chore.assignedTo,
-          })
-          .inspect();
+          });
       });
     });
     describe('Failure Cases', () => {
-      // TODO: Need to be fixed in the second iteration
       it('Need attention:should not update id', async () => {
         const chore = await prisma.chore.findFirst();
         if (!chore) throw new Error();
@@ -243,14 +286,13 @@ describe('Chores', () => {
         return pactum
           .spec()
           .patch(`/chores/${chore.id}`)
-          .withBody({
+          .withJson({
             id: fakeUuid,
           })
           .expectStatus(400);
       });
     });
   });
-  // TODO: add failure case if the delete was initiated by user who didnot created it
   describe('/chores:id Remove', () => {
     it('should delete a chore', async () => {
       const chore = await prisma.chore.findFirst();

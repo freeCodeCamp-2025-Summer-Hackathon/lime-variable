@@ -12,6 +12,7 @@ import { User } from 'generated/prisma';
 import { GetUser } from 'src/auth/decorator/get-user.decorator';
 import { JwtGuard } from 'src/auth/guard/jwt.guard';
 import { ChoresService } from './chores.service';
+import { ApprovalChoreDto } from './dto/approve-chore.dto';
 import { AssignChoreDto } from './dto/assign-chore.dto';
 import { CreateChoreDto } from './dto/create-chore.dto';
 import { UpdateChoreDto } from './dto/update-chore.dto';
@@ -38,6 +39,14 @@ export class ChoresController {
   @Patch(':id/submit')
   submit(@Param('id') choreId: string, @GetUser('id') userId: string) {
     return this.choresService.submit(choreId, userId);
+  }
+  @Patch(':id/approval')
+  approve(
+    @Param('id') choreId: string,
+    @Body('status') approvalChoreDto: ApprovalChoreDto['status'],
+    @GetUser() user: User,
+  ) {
+    return this.choresService.approve(choreId, user, approvalChoreDto);
   }
 
   @Get()
