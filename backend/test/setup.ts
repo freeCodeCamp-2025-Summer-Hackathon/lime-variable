@@ -11,9 +11,10 @@ export const initApp = async () => {
   }).compile();
 
   app = moduleRef.createNestApplication();
-  await app.init();
 
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+  app.useGlobalPipes(
+    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
+  );
 
   await app.init();
   await app.listen(3333);

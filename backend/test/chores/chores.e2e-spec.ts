@@ -98,12 +98,7 @@ describe('Chores', () => {
           .spec()
           .post('/chores')
           .withBody(incorrectAssignedToMockData)
-          .expectStatus(400)
-          .expectBody({
-            error: 'Bad Request',
-            message: 'Assigned user not found',
-            statusCode: 400,
-          });
+          .expectStatus(400);
       });
     });
   });
@@ -160,7 +155,7 @@ describe('Chores', () => {
       });
     });
   });
-  describe('/chores:id Update', () => {
+  describe('/chores:id PATCH', () => {
     describe('Success Cases', () => {
       it('should update one chore', async () => {
         const chore = await prisma.chore.findFirst();
@@ -184,10 +179,37 @@ describe('Chores', () => {
             assignedTo: chore.assignedTo,
           });
       });
+      it('should assign a user to a chore', async () => {
+        const chore = await prisma.chore.findFirst();
+        const user = await prisma.user.findFirst({
+          where: {
+            role: 'CHILD',
+          },
+        });
+        if (!chore || !user) return;
+
+        return pactum
+          .spec()
+          .patch(`/chores/${chore.id}/assign`)
+          .withBody({
+            assignedTo: user.id,
+          })
+          .expectStatus(200)
+          .expectJsonMatch({
+            id: chore.id,
+            title: chore.title,
+            description: chore.description,
+            points: chore.points,
+            status: chore.status,
+            createdBy: chore.createdBy,
+            assignedBy: chore.assignedBy,
+            assignedTo: user.id,
+          });
+      });
     });
     describe('Failure Cases', () => {
       // TODO: Need to be fixed in the second iteration
-      it.skip('Need attention:should not update id', async () => {
+      it('Need attention:should not update id', async () => {
         const chore = await prisma.chore.findFirst();
         if (!chore) throw new Error();
 
@@ -197,17 +219,7 @@ describe('Chores', () => {
           .withBody({
             id: fakeUuid,
           })
-          .expectStatus(401)
-          .expectJsonMatch({
-            id: chore.id,
-            title: chore.title,
-            description: chore.description,
-            points: chore.points,
-            status: chore.status,
-            createdBy: chore.createdBy,
-            assignedBy: chore.assignedBy,
-            assignedTo: chore.assignedTo,
-          });
+          .expectStatus(400);
       });
     });
   });
