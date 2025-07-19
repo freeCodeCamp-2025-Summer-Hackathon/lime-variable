@@ -16,13 +16,17 @@ export class PrismaService extends PrismaClient {
   }
   async cleanDB() {
     // ! MUST be in order bc of foreign key dependencies
-    await this.$transaction([this.chore.deleteMany(), this.user.deleteMany()]);
+    await this.$transaction([
+      this.chore.deleteMany(),
+      this.user.deleteMany(),
+      this.family.deleteMany(),
+    ]);
   }
   async seedDb() {
     // Create a family
     const family = await this.family.create({
       data: {
-        name: 'Test Family',
+        name: 'Test Family 1',
       },
     });
 
@@ -48,7 +52,6 @@ export class PrismaService extends PrismaClient {
         familyId: family.id,
       },
     });
-
     // Create a chore assigned to the child
     await this.chore.createMany({
       data: [
@@ -60,6 +63,7 @@ export class PrismaService extends PrismaClient {
           createdBy: parent.id,
           assignedBy: parent.id,
           assignedTo: child.id,
+          familyId: family.id,
         },
         {
           title: 'Test Chore 2',
@@ -69,6 +73,7 @@ export class PrismaService extends PrismaClient {
           createdBy: parent.id,
           assignedBy: parent.id,
           assignedTo: child.id,
+          familyId: family.id,
         },
       ],
     });

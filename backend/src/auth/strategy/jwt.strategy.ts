@@ -38,6 +38,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         role: true,
         createdAt: true,
         updatedAt: true,
+        familyId: true,
       },
     });
 
