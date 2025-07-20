@@ -124,6 +124,12 @@ This project uses Docker Compose to run a local PostgreSQL database for developm
       docker stop postgres-dev && docker rm postgres-dev && docker volume rm pgdata-dev
    ```
 
+   or
+
+   ```bash
+      docker-compose down -v
+   ```
+
 ## Quick Start (Development)
 
 To launch both the backend and the database in development mode with a single command:
