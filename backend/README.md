@@ -121,7 +121,7 @@ This project uses Docker Compose to run a local PostgreSQL database for developm
 5. Stop and take down Docker container
 
    ```bash
-      docker stop postgres && docker rm postgres && docker volume rm nest-db
+      docker stop postgres-dev && docker rm postgres-dev && docker volume rm pgdata-dev
    ```
 
 ## Quick Start (Development)
@@ -132,7 +132,7 @@ To launch both the backend and the database in development mode with a single co
 2. In the `backend` directory, run:
 
    ```bash
-   pnpm docker:start:dev
+      pnpm docker:start:dev
    ```
 
 This will:
