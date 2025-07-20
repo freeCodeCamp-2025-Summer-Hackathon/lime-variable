@@ -23,17 +23,17 @@ export class RegisterUserDto {
 export class RegisterResponseDto {
   @IsString()
   @IsUUID()
-  id: string;
+  id!: string;
 
   @IsOptional()
   @IsString()
-  name: string | null;
+  name!: string | null;
 
   @IsEmail()
   @IsNotEmpty()
-  email: string;
+  email!: string;
 
   @IsNotEmpty()
   @IsString()
-  access_token: string;
+  access_token!: string;
 }

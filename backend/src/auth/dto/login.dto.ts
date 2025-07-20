@@ -13,5 +13,5 @@ export class LoginDto {
 export class LoginResponseDto {
   @IsString()
   @IsNotEmpty()
-  access_token: string;
+  access_token!: string;
 }
