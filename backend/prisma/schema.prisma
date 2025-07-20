@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+}
+
+enum UserRole {
+  PARENT
+  CHILD
+}
+
+enum ChoreStatus {
+  PENDING
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+model Family {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+  // optional for invites
+  code String @unique @default(uuid()) // or inviteLink String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  members   User[]
+
+  @@map("families")
+}
+
+// family can have many users but user can have only one many family
+// Family -> Users (one-to-many)
+
+model User {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String?
+  email          String   @unique
+  passwordHash   String
+  role           UserRole
+  points         Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  family         Family?  @relation(fields: [familyId], references: [id])
+  familyId       String?  @db.Uuid
+  createdChores  Chore[]  @relation("CreatedByUser")
+  assignedChores Chore[]  @relation("AssignedByUser")
+  myChores       Chore[]  @relation("AssignedToUser")
+
+  @@map("users")
+}
+
+// User can have many chores but a chore can have only one User
+// User → Chores (one-to-many)
+
+model Chore {
+  id            String      @id @default(uuid()) @db.Uuid
+  title         String
+  description   String?
+  dueDate       DateTime?
+  points        Int
+  status        ChoreStatus
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  proofPhotoUrl String?
+
+  createdBy  String  @db.Uuid
+  assignedBy String  @db.Uuid
+  assignedTo String? @db.Uuid
+
+  submittedAt DateTime?
+  approvedAt  DateTime?
+  rejectedAt  DateTime?
+
+  createdByUser  User  @relation("CreatedByUser", fields: [createdBy], references: [id])
+  assignedByUser User  @relation("AssignedByUser", fields: [assignedBy], references: [id])
+  assignedToUser User? @relation("AssignedToUser", fields: [assignedTo], references: [id])
+
+  @@map("chores")
+}

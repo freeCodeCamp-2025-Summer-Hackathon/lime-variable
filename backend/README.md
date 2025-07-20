@@ -1,61 +1,154 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# ChoreChampion
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+ChoreChampion is a fun app that helps families keep track of household chores. It turns chores into a game where everyone earns points and rewards for completing tasks.
 
 ## Project setup
 
 ```bash
-$ pnpm install
+# install npm dependencies
+pnpm install
+
+# generate prisma client
+npx prisma generate
+
+# install globally dotenv-cli
+pnpm add -g dotenv-cli
+
+
 ```
+
+## Configure your database
+
+Make sure your database is configured. See database configuration information below. Use quick start for development.
+
+---
 
 ## Compile and run the project
 
 ```bash
 # development
-$ pnpm run start
+pnpm start
 
 # watch mode
-$ pnpm run start:dev
+pnpm start:dev
 
 # production mode
-$ pnpm run start:prod
+pnpm start:prod
 ```
+
+## Api Documentation
+
+Access the Swagger UI at `http://localhost:<port>/api`.
 
 ## Run tests
 
 ```bash
 # unit tests
-$ pnpm run test
+pnpm test
 
 # e2e tests
-$ pnpm run test:e2e
+pnpm test:e2e
 
 # test coverage
-$ pnpm run test:cov
+pnpm test:cov
 ```
+
+## Docker & Database Setup
+
+This project uses Docker Compose to run a local PostgreSQL database for development.
+
+### Start/Stop PostgreSQL with Docker Compose
+
+1. Make sure you have [Docker](https://www.docker.com/products/docker-desktop/) installed and running.
+2. Create a `.env.development`, `.env.test`, or `.env.production` file in the `backend` directory with the following example content using the ".env.example":
+
+   ```bash
+      # Example for .env.development
+      POSTGRES_USER=sample
+      POSTGRES_PASSWORD=sample
+      POSTGRES_DB=sample
+      DOCKER_PORT=5431
+      # For test: DOCKER_PORT=5432, for prod: DOCKER_PORT=5433 (or any free port)
+   ```
+
+3. Make sure you have globally installed dotenv-cli:
+
+   ```bash
+      # Install dotenv-cli
+      pnpm add -g dotenv-cli
+   ```
+
+4. To start the database for a specific environment, run one of the following in the `backend` directory:
+
+   #### Development
+
+   ```bash
+      docker compose -f docker-compose.dev.yml --env-file .env.development -p lime-variable-dev up -d
+   ```
+
+   or
+
+   ```bash
+      pnpm docker:dev:up
+   ```
+
+   #### Test
+
+   ```bash
+      docker compose -f docker-compose.test.yml --env-file .env.test -p lime-variable-test up -d
+   ```
+
+   or
+
+   ```bash
+      pnpm docer:test:up
+   ```
+
+   #### Production
+
+   ```bash
+      docker compose -f docker-compose.prod.yml --env-file .env.production -p lime-variable-prod up -d
+   ```
+
+   or
+
+   ```bash
+      pnpm docker:prod:up
+   ```
+
+   This will start a PostgreSQL database on the port specified by `DOCKER_PORT` in your `.env` file, mapped to 5432 in the container.
+
+5. Stop and take down Docker container
+
+   ```bash
+      docker stop postgres-dev && docker rm postgres-dev && docker volume rm pgdata-dev
+   ```
+
+   or
+
+   ```bash
+      docker-compose down -v
+   ```
+
+## Quick Start (Development)
+
+To launch both the backend and the database in development mode with a single command:
+
+1. Make sure you have created a `.env.development` file as described above.
+2. In the `backend` directory, run:
+
+   ```bash
+      pnpm docker:start:dev
+   ```
+
+This will:
+
+- Start the PostgreSQL database using Docker Compose
+- Push the latest Prisma schema to the database
+- Generate the Prisma client
+- Start the NestJS backend in development mode
+
+---
 
 ## Deployment
 
@@ -64,8 +157,8 @@ When you're ready to deploy your NestJS application to production, there are som
 If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+pnpm install -g @nestjs/mau
+mau deploy
 ```
 
 With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
