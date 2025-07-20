@@ -59,6 +59,21 @@ export class FamiliesController {
   }
 
   // ============================================================================
+  // READ ALL FAMILY ENDPOINT - GET
+  // ============================================================================
+
+  @Get()
+  @ApiOperation({
+    summary: 'Get families',
+    description: 'Retrieves all specific family',
+  })
+  @ApiOkResponse({ description: 'Got families successfully' })
+  @ApiNotFoundResponse({ description: 'Families not found' })
+  findAll(@GetUser('role') role: UserRole): Promise<Family[]> {
+    return this.familyService.findAll(role);
+  }
+
+  // ============================================================================
   // READ FAMILY ENDPOINT - GET
   // ============================================================================
 

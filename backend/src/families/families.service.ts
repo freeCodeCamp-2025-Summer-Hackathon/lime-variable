@@ -18,8 +18,23 @@ export class FamiliesService {
         'Only Parents are allowed to manage Family info',
       );
     }
+    const family = await this.prisma.family.create({ data: dto });
 
-    return this.prisma.family.create({ data: dto });
+    // when family is created by user(Parent), then also update users familyId from null to familyId
+
+    return family;
+  }
+
+  async findAll(role: UserRole) {
+    if (role === 'CHILD') {
+      throw new UnauthorizedException(
+        'Only Parents are allowed to manage Family info',
+      );
+    }
+
+    const families = await this.prisma.family.findMany();
+    if (!families?.length) throw new NotFoundException('Families not found');
+    return families;
   }
 
   async findOne(id: string) {
