@@ -1,19 +1,19 @@
-import { User, Task, Reward } from '../types';
+import { UserType, TaskType, RewardType } from '../types';
 
-export const mockUsers: User[] = [
+export const mockUsers: UserType[] = [
   {
     id: '1',
     name: 'Tasneem Ali',
     email: 'tasneem@example.com',
     role: 'parent',
-    avatar: '👩‍💼'
+    avatar: '👩‍💼',
   },
   {
     id: '2',
     name: 'Omar El-Sayed',
     email: 'omar@example.com',
     role: 'parent',
-    avatar: '👨‍💼'
+    avatar: '👨‍💼',
   },
   {
     id: '3',
@@ -21,7 +21,7 @@ export const mockUsers: User[] = [
     email: 'leila@example.com',
     role: 'child',
     points: 150,
-    avatar: '👧'
+    avatar: '👧',
   },
   {
     id: '4',
@@ -29,11 +29,11 @@ export const mockUsers: User[] = [
     email: 'yassin@example.com',
     role: 'child',
     points: 95,
-    avatar: '👦'
-  }
+    avatar: '👦',
+  },
 ];
 
-export const mockTasks: Task[] = [
+export const mockTasks: TaskType[] = [
   {
     id: '1',
     title: 'Clean Your Room',
@@ -43,7 +43,7 @@ export const mockTasks: Task[] = [
     points: 20,
     status: 'pending',
     dueDate: '2025-07-10',
-    createdAt: '2025-07-07'
+    createdAt: '2025-07-07',
   },
   {
     id: '2',
@@ -55,7 +55,7 @@ export const mockTasks: Task[] = [
     status: 'submitted',
     dueDate: '2025-07-08',
     createdAt: '2025-07-06',
-    proofPhoto: '/api/placeholder/400/300'
+    proofPhoto: '/api/placeholder/400/300',
   },
   {
     id: '3',
@@ -66,7 +66,7 @@ export const mockTasks: Task[] = [
     points: 10,
     status: 'in_progress',
     dueDate: '2025-07-08',
-    createdAt: '2025-07-07'
+    createdAt: '2025-07-07',
   },
   {
     id: '4',
@@ -78,30 +78,30 @@ export const mockTasks: Task[] = [
     status: 'completed',
     dueDate: '2025-07-07',
     createdAt: '2025-07-05',
-    completedAt: '2025-07-07'
-  }
+    completedAt: '2025-07-07',
+  },
 ];
 
-export const mockRewards: Reward[] = [
+export const mockRewards: RewardType[] = [
   {
     id: '1',
     title: '1 Hour Extra Screen Time',
     description: 'Enjoy an extra hour of TV or gaming',
     cost: 50,
-    available: true
+    available: true,
   },
   {
     id: '2',
     title: 'Choose Family Movie Night',
     description: 'Pick the movie for next family movie night',
     cost: 100,
-    available: true
+    available: true,
   },
   {
     id: '3',
     title: '$10 Allowance Bonus',
     description: 'Extra $10 added to your allowance',
     cost: 200,
-    available: true
-  }
+    available: true,
+  },
 ];

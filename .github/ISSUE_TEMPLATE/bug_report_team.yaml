@@ -1,8 +1,8 @@
 name: Team Bug Report
 description: For internal teams to report bugs with more technical details.
-title: "[Team Bug] "
+title: "[Frontend] or [Backend]-[Team Bug] "
 labels: ["type: bug", "from: team", "triage"]
-projects: ["Frontend", "Backend"]
+
 assignees:
   - SampleAssignee
 

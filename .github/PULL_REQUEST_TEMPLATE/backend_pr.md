@@ -13,9 +13,11 @@ Briefly describe what you changed or added.
 
 ---
 
-## 📁 Affected files/modules
+## 📁 Changes affects
 
-List key files or modules you worked on.
+- [ ] Endpoint
+- [ ] Database
+- [ ] Config
 
 ---
 

@@ -12,15 +12,11 @@
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
+    "strict": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,
     "strictBindCallApply": true,
-    "noFallthroughCasesInSwitch": true,
-    "paths": {
-      "src/*": ["src/*"],
-      "test/*": ["test/*"],
-      "generated/prisma": ["generated/prisma"]
-    }
+    "noFallthroughCasesInSwitch": true
   }
 }
