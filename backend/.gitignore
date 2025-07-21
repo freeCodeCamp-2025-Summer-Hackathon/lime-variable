@@ -37,13 +37,14 @@ lerna-debug.log*
 
 # dotenv environment variable files
 .env
-.env.development.local
-.env.development
-.env.production.local
-.env.test
-.env.production
 .env.local
-.env.dev
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+
 
 # temp directory
 .temp
@@ -58,4 +59,5 @@ pids
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
+# Prisma generated files
 /generated/prisma

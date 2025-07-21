@@ -5,20 +5,35 @@ ChoreChampion is a fun app that helps families keep track of household chores. I
 ## Project setup
 
 ```bash
-$ pnpm install
+# install npm dependencies
+pnpm install
+
+# generate prisma client
+npx prisma generate
+
+# install globally dotenv-cli
+pnpm add -g dotenv-cli
+
+
 ```
+
+## Configure your database
+
+Make sure your database is configured. See database configuration information below. Use quick start for development.
+
+---
 
 ## Compile and run the project
 
 ```bash
 # development
-$ pnpm start
+pnpm start
 
 # watch mode
-$ pnpm start:dev
+pnpm start:dev
 
 # production mode
-$ pnpm start:prod
+pnpm start:prod
 ```
 
 ## Api Documentation
@@ -29,78 +44,91 @@ Access the Swagger UI at `http://localhost:<port>/api`.
 
 ```bash
 # unit tests
-$ pnpm test
+pnpm test
 
 # e2e tests
-$ pnpm test:e2e
+pnpm test:e2e
 
 # test coverage
-$ pnpm test:cov
+pnpm test:cov
 ```
 
 ## Docker & Database Setup
 
 This project uses Docker Compose to run a local PostgreSQL database for development.
 
-### Start PostgreSQL with Docker Compose
+### Start/Stop PostgreSQL with Docker Compose
 
 1. Make sure you have [Docker](https://www.docker.com/products/docker-desktop/) installed and running.
 2. Create a `.env.development`, `.env.test`, or `.env.production` file in the `backend` directory with the following example content using the ".env.example":
 
-```bash
-  # Example for .env.development
-  POSTGRES_USER=sample
-  POSTGRES_PASSWORD=sample
-  POSTGRES_DB=sample
-  DOCKER_PORT=5431
-  # For test: DOCKER_PORT=5432, for prod: DOCKER_PORT=5433 (or any free port)
-```
+   ```bash
+      # Example for .env.development
+      POSTGRES_USER=sample
+      POSTGRES_PASSWORD=sample
+      POSTGRES_DB=sample
+      DOCKER_PORT=5431
+      # For test: DOCKER_PORT=5432, for prod: DOCKER_PORT=5433 (or any free port)
+   ```
 
-3. install globally dotenv-cli:
+3. Make sure you have globally installed dotenv-cli:
 
-```bash
-pnpm add -g dotenv-cli
-```
+   ```bash
+      # Install dotenv-cli
+      pnpm add -g dotenv-cli
+   ```
 
 4. To start the database for a specific environment, run one of the following in the `backend` directory:
 
-   **Development:**
+   #### Development
 
-```bash
-docker compose -f docker-compose.dev.yml --env-file .env.development -p lime-variable-dev up -d
-```
+   ```bash
+      docker compose -f docker-compose.dev.yml --env-file .env.development -p lime-variable-dev up -d
+   ```
 
-or
+   or
 
-```bash
-pnpm docker:dev:up
-```
+   ```bash
+      pnpm docker:dev:up
+   ```
 
-**Test:**
+   #### Test
 
-```bash
-docker compose -f docker-compose.test.yml --env-file .env.test -p lime-variable-test up -d
-```
+   ```bash
+      docker compose -f docker-compose.test.yml --env-file .env.test -p lime-variable-test up -d
+   ```
 
-or
+   or
 
-```bash
-pnpm docker:test:up
-```
+   ```bash
+      pnpm docer:test:up
+   ```
 
-**Production:**
+   #### Production
 
-```bash
-docker compose -f docker-compose.prod.yml --env-file .env.production -p lime-variable-prod up -d
-```
+   ```bash
+      docker compose -f docker-compose.prod.yml --env-file .env.production -p lime-variable-prod up -d
+   ```
 
-or
+   or
 
-```bash
-pnpm docker:prod:up
-```
+   ```bash
+      pnpm docker:prod:up
+   ```
 
-This will start a PostgreSQL database on the port specified by `DOCKER_PORT` in your `.env` file, mapped to 5432 in the container.
+   This will start a PostgreSQL database on the port specified by `DOCKER_PORT` in your `.env` file, mapped to 5432 in the container.
+
+5. Stop and take down Docker container
+
+   ```bash
+      docker stop postgres-dev && docker rm postgres-dev && docker volume rm pgdata-dev
+   ```
+
+   or
+
+   ```bash
+      docker-compose down -v
+   ```
 
 ## Quick Start (Development)
 
@@ -110,7 +138,7 @@ To launch both the backend and the database in development mode with a single co
 2. In the `backend` directory, run:
 
    ```bash
-   pnpm docker:start:dev
+      pnpm docker:start:dev
    ```
 
 This will:
@@ -121,6 +149,19 @@ This will:
 - Start the NestJS backend in development mode
 
 ---
+
+## Deployment
+
+When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+
+If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+
+```bash
+pnpm install -g @nestjs/mau
+mau deploy
+```
+
+With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
 
 ## Resources
 

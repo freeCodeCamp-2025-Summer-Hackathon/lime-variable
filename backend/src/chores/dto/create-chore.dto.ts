@@ -21,7 +21,7 @@ export class CreateChoreDto {
   @IsString({ message: 'Title must be a string' })
   @MinLength(5, { message: 'Title must be at least 5 characters long' })
   @IsNotEmpty({ message: 'Title cannot be empty' })
-  title: string;
+  title!: string;
   //
   @ApiProperty({
     description: 'Points assigned to the chore',
@@ -31,7 +31,7 @@ export class CreateChoreDto {
   })
   @IsNumber({}, { message: 'Points must be a number' })
   @IsNotEmpty({ message: 'Points cannot be empty' })
-  points: number;
+  points!: number;
 
   // Optional fields
   @ApiProperty({

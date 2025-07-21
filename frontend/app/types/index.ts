@@ -1,4 +1,4 @@
-export interface User {
+export interface UserType {
   id: string;
   name: string;
   email: string;
@@ -7,7 +7,7 @@ export interface User {
   avatar?: string;
 }
 
-export interface Task {
+export interface TaskType {
   id: string;
   title: string;
   description: string;
@@ -22,7 +22,7 @@ export interface Task {
   feedback?: string;
 }
 
-export interface Reward {
+export interface RewardType {
   id: string;
   title: string;
   description: string;
