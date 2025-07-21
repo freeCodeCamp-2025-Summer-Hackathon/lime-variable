@@ -1,9 +1,9 @@
-import { User } from '../types';
+import { UserType } from '../types';
 import { mockUsers } from './mockData';
 
 const STORAGE_KEY = 'chore_tracker_user';
 
-export function login(email: string, password: string): User | null {
+export function login(email: string, password: string): UserType | null {
   const user = mockUsers.find(u => u.email === email);
   if (user && password === 'password123') {
     if (typeof window !== 'undefined') {
@@ -20,7 +20,7 @@ export function logout(): void {
   }
 }
 
-export function getCurrentUser(): User | null {
+export function getCurrentUser(): UserType | null {
   if (typeof window === 'undefined') return null;
   
   const userStr = localStorage.getItem(STORAGE_KEY);

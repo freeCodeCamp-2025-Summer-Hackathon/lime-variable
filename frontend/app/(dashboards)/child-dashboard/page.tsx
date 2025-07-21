@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUser, logout } from '../../lib/auth';
-import {  User } from '../../types';
+import { UserType } from '../../types';
 
 export default function ChildDashboard() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserType | null>(null);
 
   const router = useRouter();
 
