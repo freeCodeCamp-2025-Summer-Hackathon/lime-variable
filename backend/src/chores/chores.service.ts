@@ -17,41 +17,41 @@ import { UpdateChoreDto } from './dto/update-chore.dto';
 export class ChoresService {
   constructor(private prisma: PrismaService) {}
   async create(createChoreDto: CreateChoreDto, user: User) {
+    if (!user.familyId)
+      throw new BadRequestException('You must have a family to create a chore');
+
+    if (user.role === 'CHILD')
+      throw new ForbiddenException(
+        'You do not have permission to create a chore',
+      );
+
+    const updatedChoreDto = {
+      ...createChoreDto,
+      createdBy: user.id,
+      status: ChoreStatus.PENDING,
+      assignedTo: createChoreDto.assignedTo || null,
+      familyId: user.familyId,
+      // ! should we add this if it was a bounty?
+      assignedBy: user.id,
+    };
+    if (createChoreDto.assignedTo) {
+      const assignedUser = await this.prisma.user.findUnique({
+        where: { id: createChoreDto.assignedTo },
+      });
+
+      if (!assignedUser)
+        throw new BadRequestException('Assigned user not found');
+
+      updatedChoreDto.assignedTo = assignedUser.id;
+    }
+
     try {
-      if (!user.familyId)
-        throw new BadRequestException(
-          'You must have a family to create a chore',
-        );
-      const updatedChoreDto = {
-        ...createChoreDto,
-        createdBy: user.id,
-        status: ChoreStatus.PENDING,
-        assignedTo: createChoreDto.assignedTo || null,
-        assignedBy: user.id,
-        familyId: user.familyId,
-      };
-      if (createChoreDto.assignedTo) {
-        const assignedUser = await this.prisma.user.findUnique({
-          where: { id: createChoreDto.assignedTo },
-        });
-
-        if (!assignedUser)
-          throw new BadRequestException('Assigned user not found');
-
-        updatedChoreDto.assignedTo = assignedUser.id;
-      }
-
       const createdChore = await this.prisma.chore.create({
         data: updatedChoreDto,
       });
 
-      if (!createdChore)
-        throw new InternalServerErrorException('Chore could not be created');
-
       return createdChore;
     } catch (error) {
-      if (error instanceof BadRequestException) throw error;
-
       throw new InternalServerErrorException('Chore could not be created', {
         cause: error,
       });
@@ -63,39 +63,30 @@ export class ChoresService {
     userToBeAssigned: AssignChoreDto['assignedTo'],
     user: User,
   ) {
+    const chore = await this.prisma.chore.findUnique({
+      where: { id: choreId },
+    });
+
+    if (!chore) throw new NotFoundException('Chore does not exist');
+
+    if (user.familyId !== chore.familyId || user.role === 'CHILD')
+      throw new ForbiddenException('You do not have access to this resource');
+
+    const assignedUser = await this.prisma.user.findUnique({
+      where: { id: userToBeAssigned },
+    });
+
+    if (!assignedUser) throw new BadRequestException('Assigned user not found');
+
     try {
-      const chore = await this.prisma.chore.findUnique({
-        where: { id: choreId },
-      });
-
-      if (!chore) throw new NotFoundException('Chore does not exist');
-
-      if (user.familyId !== chore.familyId || user.role === 'CHILD')
-        throw new UnauthorizedException(
-          'You do not have access to this resource',
-        );
-
-      const assignedUser = await this.prisma.user.findUnique({
-        where: { id: userToBeAssigned },
-      });
-
-      if (!assignedUser)
-        throw new BadRequestException('Assigned user not found');
-
       const updatedChore = await this.prisma.chore.update({
         where: { id: choreId },
-        data: { assignedTo: assignedUser.id },
+
+        data: { assignedTo: assignedUser.id, assignedBy: user.id },
       });
 
       return updatedChore;
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof UnauthorizedException ||
-        error instanceof BadRequestException
-      ) {
-        throw error;
-      }
       throw new InternalServerErrorException('Chore could not be assigned', {
         cause: error,
       });
@@ -106,29 +97,25 @@ export class ChoresService {
     user: User,
     status: ApprovalChoreDto['status'],
   ) {
+    const chore = await this.prisma.chore.findUnique({
+      where: { id: choreId },
+    });
+    if (!chore) throw new NotFoundException('Chore does not exist');
+
+    if (user.familyId !== chore.familyId || user.role === 'CHILD')
+      throw new ForbiddenException('You do not have access to this resource');
+    if (chore.status !== ChoreStatus.SUBMITTED)
+      throw new BadRequestException('Chore must be submitted before approval');
+    const updateValues: Record<string, string | Date> = { status };
+
+    if (status === 'APPROVED') {
+      updateValues.approvedAt = new Date();
+    }
+
+    if (status === 'REJECTED') {
+      updateValues.rejectedAt = new Date();
+    }
     try {
-      const chore = await this.prisma.chore.findUnique({
-        where: { id: choreId },
-      });
-      if (!chore) throw new NotFoundException('Chore does not exist');
-
-      if (user.familyId !== chore.familyId || user.role === 'CHILD')
-        throw new UnauthorizedException(
-          'You do not have access to this resource',
-        );
-      if (chore.status !== ChoreStatus.SUBMITTED)
-        throw new BadRequestException(
-          'Chore must be submitted before approval',
-        );
-      const updateValues: Record<string, string | Date> = { status };
-
-      if (status === 'APPROVED') {
-        updateValues.approvedAt = new Date();
-      }
-
-      if (status === 'REJECTED') {
-        updateValues.rejectedAt = new Date();
-      }
       const updatedChore = await this.prisma.chore.update({
         where: { id: choreId },
         data: updateValues,
@@ -136,13 +123,6 @@ export class ChoresService {
 
       return updatedChore;
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof UnauthorizedException ||
-        error instanceof BadRequestException
-      ) {
-        throw error;
-      }
       throw new InternalServerErrorException('Chore could not be approved', {
         cause: error,
       });
@@ -150,18 +130,18 @@ export class ChoresService {
   }
 
   async submit(choreId: string, userId: string) {
+    const chore = await this.prisma.chore.findUnique({
+      where: { id: choreId },
+    });
+
+    if (!chore) throw new NotFoundException('Chore does not exist');
+
+    if (userId !== chore.assignedTo)
+      throw new UnauthorizedException(
+        'You do not have access to this resource',
+      );
+
     try {
-      const chore = await this.prisma.chore.findUnique({
-        where: { id: choreId },
-      });
-
-      if (!chore) throw new NotFoundException('Chore does not exist');
-
-      if (userId !== chore.assignedTo)
-        throw new UnauthorizedException(
-          'You do not have access to this resource',
-        );
-
       const updatedChore = await this.prisma.chore.update({
         where: { id: choreId },
         data: { status: ChoreStatus.SUBMITTED, submittedAt: new Date() },
@@ -169,12 +149,6 @@ export class ChoresService {
 
       return updatedChore;
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof UnauthorizedException
-      ) {
-        throw error;
-      }
       throw new InternalServerErrorException('Chore could not be submitted', {
         cause: error,
       });
@@ -183,9 +157,18 @@ export class ChoresService {
 
   // ! add filter and f=remove user
   async findAll(user: User) {
+    if (!user.familyId)
+      throw new BadRequestException('You must have a family to fetch chores');
     try {
+      const where: { familyId: string; assignedTo?: string } = {
+        familyId: user.familyId,
+      };
+      // if user was a child
+      if (user.role === 'CHILD') {
+        where.assignedTo = user.id;
+      }
       const allChores = await this.prisma.chore.findMany({
-        where: { createdBy: user.id },
+        where,
       });
 
       return allChores;
@@ -196,68 +179,43 @@ export class ChoresService {
     }
   }
 
-  async findOne(userId: string, choreId: string) {
-    try {
-      const chore = await this.prisma.chore.findUnique({
-        where: { id: choreId },
-      });
+  async findOne(user: User, choreId: string) {
+    const chore = await this.prisma.chore.findUnique({
+      where: { id: choreId },
+    });
 
-      if (!chore) throw new NotFoundException('Chore does not exist');
+    if (!chore) throw new NotFoundException('Chore does not exist');
 
-      if (userId !== chore.createdBy)
-        throw new UnauthorizedException(
-          'You do not have access to this resource',
-        );
+    if (user.id !== chore.familyId && chore.assignedTo !== user.id)
+      throw new ForbiddenException('You do not have access to this resource');
 
-      return chore;
-    } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof UnauthorizedException
-      ) {
-        throw error;
-      }
-      throw new InternalServerErrorException('Could not fetch chore', {
-        cause: error,
-      });
-    }
+    return chore;
   }
 
-  async update(
-    choreId: string,
-    updateChoreDto: UpdateChoreDto,
-    userId: User['id'],
-  ) {
+  async update(choreId: string, updateChoreDto: UpdateChoreDto, user: User) {
+    const chore = await this.prisma.chore.findUnique({
+      where: {
+        id: choreId,
+      },
+    });
+
+    if (!chore) throw new BadRequestException('Resource not found');
+
+    if (chore.createdBy !== user.id || user.role === 'CHILD')
+      throw new ForbiddenException(
+        'You do not have permission to update the resource',
+      );
+
     try {
-      const chore = await this.prisma.chore.findUnique({
-        where: {
-          id: choreId,
-        },
-      });
-      if (!chore) throw new BadRequestException('Resource not found');
-
-      if (chore?.createdBy !== userId)
-        throw new ForbiddenException(
-          'You do not have permission to update the resource',
-        );
-      // TODO: remove id and createdby  and other backend props before updating
-
       const updatedChore = await this.prisma.chore.update({
         where: {
           id: choreId,
         },
-        // ! check if more props are added
         data: updateChoreDto,
       });
 
       return updatedChore;
     } catch (error) {
-      if (
-        error instanceof BadRequestException ||
-        error instanceof ForbiddenException
-      )
-        throw error;
-
       throw new InternalServerErrorException('Chore could not be updated', {
         cause: error,
       });
@@ -265,32 +223,26 @@ export class ChoresService {
   }
 
   async remove(id: string, user: User) {
+    if (user.role === 'CHILD') {
+      throw new ForbiddenException(
+        'You do not have permission to delete the resource',
+      );
+    }
+    const chore = await this.prisma.chore.findUnique({
+      where: { id },
+    });
+
+    if (!chore) throw new BadRequestException('Resource not found');
+
+    if (chore.createdBy !== user.id)
+      throw new ForbiddenException(
+        'You do not have permission to delete the resource',
+      );
     try {
-      if (user.role === 'CHILD') {
-        throw new ForbiddenException(
-          'You do not have permission to delete the resource',
-        );
-      }
-      const chore = await this.prisma.chore.findUnique({
-        where: { id },
-      });
-
-      if (!chore) throw new BadRequestException('Resource not found');
-
-      if (chore.createdBy !== user.id)
-        throw new ForbiddenException(
-          'You do not have permission to delete the resource',
-        );
       await this.prisma.chore.delete({
         where: { id },
       });
     } catch (error) {
-      if (
-        error instanceof BadRequestException ||
-        error instanceof ForbiddenException
-      )
-        throw error;
-
       throw new InternalServerErrorException('Chore could not be deleted', {
         cause: error,
       });
