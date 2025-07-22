@@ -1,7 +1,9 @@
-import { IsEnum, IsNotEmpty } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsIn, IsNotEmpty } from 'class-validator';
 
 export class ApprovalChoreDto {
   @IsNotEmpty()
-  @IsEnum(['REJECTED', 'APPROVED'])
+  @IsIn(['APPROVED', 'REJECTED'])
+  @ApiProperty({ enum: ['APPROVED', 'REJECTED'] })
   status: 'APPROVED' | 'REJECTED';
 }
