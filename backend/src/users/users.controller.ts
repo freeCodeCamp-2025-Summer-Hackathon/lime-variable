@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -10,12 +12,16 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -25,6 +31,7 @@ import { JwtGuard } from 'src/auth/guard/jwt.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { GetUser } from 'src/auth/decorator/get-user.decorator';
 
 @ApiTags('users')
 @UseGuards(JwtGuard)
@@ -72,6 +79,23 @@ export class UsersController {
   }
 
   // ============================================================================
+  // RETRIEVE SINGLE FAMILY MEMBER - GET
+  // ============================================================================
+
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Get one user',
+    description: 'Retrieve single user details',
+  })
+  @ApiOkResponse({ description: 'User data fetched successfully' })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<Omit<User, 'passwordHash'>> {
+    return this.usersService.findOne(id);
+  }
+
+  // ============================================================================
   // UPDATE FAMILY MEMBER - PATCH
   // ============================================================================
 
@@ -85,11 +109,18 @@ export class UsersController {
     type: UpdateUserDto,
   })
   @ApiOkResponse({ description: 'User account updated successfully' })
+  @ApiBadRequestResponse({ description: 'Invalid input data' })
+  @ApiUnauthorizedResponse({ description: 'Insufficient permissions' })
+  @ApiNotFoundResponse({ description: 'Family or user not found' })
   updateFamilyMember(
+    @GetUser('id') currentUserId: string,
+    @GetUser('role') currentUserRole: UserRole,
     @Param() params: { familyId: string; userId: string },
     @Body() dto: UpdateUserDto,
-  ) {
+  ): Promise<Omit<User, 'passwordHash'>> {
     return this.usersService.updateFamilyMember(
+      currentUserId,
+      currentUserRole,
       params.familyId,
       params.userId,
       dto,
@@ -97,7 +128,26 @@ export class UsersController {
   }
 
   @Delete(':id')
-  remove() {
-    return 'user deleted';
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({
+    name: 'id',
+    description: 'User ID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
+  @ApiNotFoundResponse({ description: 'Account not found.' })
+  @ApiUnauthorizedResponse({
+    description: 'Contact your parent to delete your account',
+  })
+  @ApiForbiddenResponse({
+    description: "You can't delete other parent's account",
+  })
+  @ApiNoContentResponse({ description: 'Account deleted successfully.' })
+  remove(
+    @GetUser('role') currentUserRole: UserRole,
+    @Param('id') deleteId: string,
+  ): Promise<void> {
+    return this.usersService.remove(currentUserRole, deleteId);
   }
 }
+
+// todo when child is sending wrong role, call forbidden before bad request
