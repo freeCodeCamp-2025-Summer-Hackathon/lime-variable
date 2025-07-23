@@ -40,7 +40,7 @@ import { GetUser } from 'src/auth/decorator/get-user.decorator';
 export class UsersController {
   constructor(private usersService: UsersService) {}
   // ============================================================================
-  // CREATE USER(ADD MEMBER IN FAMILY) - POST
+  //  POST /users
   // ============================================================================
 
   @Post()
@@ -62,10 +62,10 @@ export class UsersController {
   }
 
   // ============================================================================
-  // RETRIEVE ALL FAMILY MEMBERS - GET
+  //   GET /users/family/:familyId
   // ============================================================================
 
-  @Get(':familyId')
+  @Get('family/:familyId')
   @ApiOperation({
     summary: 'Get users of a family',
     description: 'Retrieves all users of a family',
@@ -79,10 +79,10 @@ export class UsersController {
   }
 
   // ============================================================================
-  // RETRIEVE SINGLE FAMILY MEMBER - GET
+  //  GET /users/user/:userId
   // ============================================================================
 
-  @Get(':id')
+  @Get('user/:id')
   @ApiOperation({
     summary: 'Get one user',
     description: 'Retrieve single user details',
@@ -96,10 +96,10 @@ export class UsersController {
   }
 
   // ============================================================================
-  // UPDATE FAMILY MEMBER - PATCH
+  //  PATCH /users/family/:familyId/user/:userId
   // ============================================================================
 
-  @Patch(':familyId/:userId')
+  @Patch('family/:familyId/user/:userId')
   @ApiOperation({
     summary: 'Updates user of a family',
     description: 'Update user data in the family',
@@ -127,7 +127,11 @@ export class UsersController {
     );
   }
 
-  @Delete(':id')
+  // ============================================================================
+  //  DELETE /users/user/:userId
+  // ============================================================================
+
+  @Delete('user/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({
     name: 'id',
@@ -149,5 +153,3 @@ export class UsersController {
     return this.usersService.remove(currentUserRole, deleteId);
   }
 }
-
-// todo when child is sending wrong role, call forbidden before bad request

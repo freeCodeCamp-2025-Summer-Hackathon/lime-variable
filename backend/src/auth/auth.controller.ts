@@ -19,7 +19,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   // ============================================================================
-  // REGISTER ENDPOINT - POST
+  //  POST /auth/register-user
   // ============================================================================
 
   @Post('register-user')
@@ -40,7 +40,7 @@ export class AuthController {
   }
 
   // ============================================================================
-  // LOGIN ENDPOINT - POST
+  //  POST /auth/login
   // ============================================================================
 
   @Post('login')
