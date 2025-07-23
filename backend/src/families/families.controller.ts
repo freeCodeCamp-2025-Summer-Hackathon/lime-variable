@@ -34,8 +34,6 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 
 @ApiTags('families')
 @UseGuards(JwtGuard)
-@UseGuards(RolesGuard)
-@Roles(UserRole.PARENT)
 @ApiBearerAuth()
 @Controller('families')
 export class FamiliesController {
@@ -67,6 +65,8 @@ export class FamiliesController {
   // ============================================================================
 
   @Get()
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PARENT)
   @ApiOperation({
     summary: 'Get families',
     description: 'Retrieves all specific family',
@@ -82,6 +82,8 @@ export class FamiliesController {
   // ============================================================================
 
   @Get(':id')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PARENT)
   @ApiOperation({
     summary: 'Get family by ID',
     description: 'Retrieves a specific family by their unique identifier',
@@ -102,6 +104,8 @@ export class FamiliesController {
   // =================================================================
 
   @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PARENT)
   @ApiParam({
     name: 'id',
     description: 'Family ID',
@@ -124,6 +128,8 @@ export class FamiliesController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PARENT)
   @ApiParam({
     name: 'id',
     description: 'Family ID',

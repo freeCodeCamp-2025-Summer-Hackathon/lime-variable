@@ -13,6 +13,7 @@ import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library'
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserRole } from 'generated/prisma';
 import { ValidationUtil } from 'src/utils/validation.util';
+import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
 // Stc1234
 type UpdateUser = Pick<User, 'id' | 'name' | 'email' | 'role' | 'familyId'>;
 
@@ -65,6 +66,23 @@ export class UsersService {
       }
       throw error;
     }
+  }
+
+  async getMe(user: AuthenticatedUser) {
+    const userData = await this.prisma.user.findUnique({
+      where: {
+        id: user.id,
+      },
+      omit: {
+        passwordHash: true,
+      },
+    });
+
+    if (!userData) {
+      throw new NotFoundException('User data not found');
+    }
+
+    return userData;
   }
 
   async getFamilyMembers(familyId: string) {

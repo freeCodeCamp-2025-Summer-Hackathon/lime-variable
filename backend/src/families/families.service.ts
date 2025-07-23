@@ -36,7 +36,16 @@ export class FamiliesService {
   }
 
   async findOne(id: string) {
-    const family = await this.prisma.family.findUnique({ where: { id } });
+    const family = await this.prisma.family.findUnique({
+      where: { id },
+      include: {
+        members: {
+          omit: {
+            passwordHash: true,
+          },
+        },
+      },
+    });
     if (!family) {
       throw new NotFoundException(`Family not found`);
     }

@@ -33,6 +33,8 @@ import { JwtGuard } from 'src/common/guards/jwt.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
+import { Request } from 'express';
 
 @ApiTags('users')
 @UseGuards(JwtGuard)
@@ -76,9 +78,21 @@ export class UsersController {
   }
 
   // ============================================================================
-  //   GET /users/family/:familyId  only PARENT can get
+  //   GET /users/user/me
   // ============================================================================
 
+  @Get('me')
+  @ApiOperation({
+    summary: 'Get user info',
+    description: 'Retrieve user info',
+  })
+  getMe(@GetUser() user: AuthenticatedUser) {
+    return this.usersService.getMe(user);
+  }
+
+  // ============================================================================
+  //   GET /users/family/:familyId  only PARENT can get
+  // ============================================================================
   @Get('family/:familyId')
   @UseGuards(RolesGuard)
   @Roles(UserRole.PARENT)
