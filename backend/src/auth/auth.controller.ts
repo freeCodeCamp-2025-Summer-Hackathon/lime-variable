@@ -30,6 +30,16 @@ export class AuthController {
   @ApiBody({
     description: 'User creation data',
     type: RegisterUserDto,
+    examples: {
+      default: {
+        summary: 'Example register request',
+        value: {
+          name: 'Jane Doe',
+          email: 'jane.doe@example.com',
+          password: 'StrongPassword123!',
+        },
+      },
+    },
   })
   @ApiCreatedResponse({
     description: 'The account created successfully.',
@@ -49,7 +59,19 @@ export class AuthController {
     summary: 'Login user.',
     description: 'Account login.',
   })
-  @ApiBody({ description: 'Login data', type: LoginDto })
+  @ApiBody({
+    description: 'Login data',
+    type: LoginDto,
+    examples: {
+      default: {
+        description: 'Example login request',
+        value: {
+          email: 'jane.doe@example.com',
+          password: 'StrongPassword123!',
+        },
+      },
+    },
+  })
   @ApiOkResponse({ description: 'Login successful.' })
   @ApiNotFoundResponse({ description: 'Account not found.' })
   @ApiForbiddenResponse({ description: 'Credentials incorrect' })

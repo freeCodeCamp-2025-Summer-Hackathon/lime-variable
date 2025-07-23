@@ -52,6 +52,18 @@ export class UsersController {
   @ApiBody({
     description: 'Add Family member data',
     type: CreateUserDto,
+    examples: {
+      default: {
+        summary: 'Example request',
+        value: {
+          name: 'John Doe',
+          email: 'john.doe@example.com',
+          password: 'StrongPassword123!',
+          role: UserRole.CHILD,
+          familyId: '550e8400-e29b-41d4-a716-446655440000',
+        },
+      },
+    },
   })
   @ApiUnauthorizedResponse({
     description: 'Only Parents can add family member',
@@ -70,6 +82,12 @@ export class UsersController {
     summary: 'Get users of a family',
     description: 'Retrieves all users of a family',
   })
+  @ApiParam({
+    name: 'familyId',
+    type: 'string',
+    description: 'UUID of the family',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
   @ApiOkResponse({ description: 'Got family members successfully' })
   @ApiNotFoundResponse({ description: 'Users not found' })
   getFamilyMembers(
@@ -82,17 +100,23 @@ export class UsersController {
   //  GET /users/user/:userId
   // ============================================================================
 
-  @Get('user/:id')
+  @Get('user/:userId')
   @ApiOperation({
     summary: 'Get one user',
     description: 'Retrieve single user details',
   })
+  @ApiParam({
+    name: 'userId',
+    type: 'string',
+    description: 'UUID of the user',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
   @ApiOkResponse({ description: 'User data fetched successfully' })
   @ApiNotFoundResponse({ description: 'User not found' })
   findOne(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('userId', ParseUUIDPipe) userId: string,
   ): Promise<Omit<User, 'passwordHash'>> {
-    return this.usersService.findOne(id);
+    return this.usersService.findOne(userId);
   }
 
   // ============================================================================
@@ -104,9 +128,30 @@ export class UsersController {
     summary: 'Updates user of a family',
     description: 'Update user data in the family',
   })
+  @ApiParam({
+    name: 'familyId',
+    type: 'string',
+    description: 'UUID of the family',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  @ApiParam({
+    name: 'userId',
+    type: 'string',
+    description: 'UUID of the user to update',
+    example: '660e8400-e29b-41d4-a716-446655440111',
+  })
   @ApiBody({
     description: 'Update user data',
     type: UpdateUserDto,
+    examples: {
+      default: {
+        summary: 'Example update request',
+        value: {
+          name: 'Jane Doe',
+          email: 'jane.doe@example.com',
+        },
+      },
+    },
   })
   @ApiOkResponse({ description: 'User account updated successfully' })
   @ApiBadRequestResponse({ description: 'Invalid input data' })
@@ -131,10 +176,10 @@ export class UsersController {
   //  DELETE /users/user/:userId
   // ============================================================================
 
-  @Delete('user/:id')
+  @Delete('user/:userId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({
-    name: 'id',
+    name: 'userId',
     description: 'User ID',
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
@@ -148,8 +193,8 @@ export class UsersController {
   @ApiNoContentResponse({ description: 'Account deleted successfully.' })
   remove(
     @GetUser('role') currentUserRole: UserRole,
-    @Param('id') deleteId: string,
+    @Param('userId') userId: string,
   ): Promise<void> {
-    return this.usersService.remove(currentUserRole, deleteId);
+    return this.usersService.remove(currentUserRole, userId);
   }
 }
