@@ -14,8 +14,8 @@ import { CreateFamilyDto } from './dto/create-family.dto';
 import { FamiliesService } from './families.service';
 import { Family, UserRole } from 'generated/prisma';
 import { UpdateFamilyDto } from './dto/update-family.dto';
-import { GetUser } from 'src/auth/decorator/get-user.decorator';
-import { JwtGuard } from 'src/auth/guard/jwt.guard';
+import { JwtGuard } from 'src/common/guards/jwt.guard';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
 import {
   ApiBearerAuth,
   ApiBody,

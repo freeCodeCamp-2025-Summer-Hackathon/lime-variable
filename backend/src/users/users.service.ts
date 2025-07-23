@@ -13,7 +13,7 @@ import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library'
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserRole } from 'generated/prisma';
 import { ValidationUtil } from 'src/utils/validation.util';
-
+// Stc1234
 type UpdateUser = Pick<User, 'id' | 'name' | 'email' | 'role' | 'familyId'>;
 
 @Injectable()
@@ -23,7 +23,12 @@ export class UsersService {
   // PUBLIC METHODS (used by controllers)
 
   async create(payload: CreateUserDto) {
-    const hashedPassword = await argon.hash(payload.password);
+    const hashedPassword = await argon.hash(payload.password, {
+      type: argon.argon2id,
+      memoryCost: 2 ** 16,
+      timeCost: 5,
+      parallelism: 1,
+    });
 
     try {
       const family = await this.prisma.family.findUnique({
@@ -97,6 +102,10 @@ export class UsersService {
     if (!dto || Object.keys(dto).length === 0) {
       throw new BadRequestException('No data provided for update');
     }
+    if (currentUserRole === 'CHILD' && (dto.role || dto.familyId)) {
+      throw new UnauthorizedException("You can't change your role or family");
+    }
+
     if (
       !ValidationUtil.isValidUUID(familyId) ||
       !ValidationUtil.isValidUUID(userId)
@@ -109,7 +118,7 @@ export class UsersService {
     });
 
     if (!currentUser) {
-      throw new UnauthorizedException('Current user not found');
+      throw new NotFoundException('Current user not found');
     }
     if (currentUser.familyId !== familyId) {
       throw new ForbiddenException(
@@ -239,7 +248,7 @@ export class UsersService {
       }
 
       if (dto.role || dto.familyId) {
-        throw new ForbiddenException('Children cannot change role or family');
+        throw new ForbiddenException("Children can't change role or family");
       }
     }
 

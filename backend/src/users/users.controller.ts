@@ -26,12 +26,13 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { User, UserRole } from 'generated/prisma';
-import { Roles } from 'src/auth/decorator/roles.decorator';
-import { JwtGuard } from 'src/auth/guard/jwt.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { GetUser } from 'src/auth/decorator/get-user.decorator';
+import { JwtGuard } from 'src/common/guards/jwt.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
 
 @ApiTags('users')
 @UseGuards(JwtGuard)
@@ -40,10 +41,11 @@ import { GetUser } from 'src/auth/decorator/get-user.decorator';
 export class UsersController {
   constructor(private usersService: UsersService) {}
   // ============================================================================
-  //  POST /users
+  //  POST /users  only PARENT can create
   // ============================================================================
 
   @Post()
+  @UseGuards(RolesGuard)
   @Roles(UserRole.PARENT)
   @ApiOperation({
     summary: 'Create new User',
@@ -74,10 +76,12 @@ export class UsersController {
   }
 
   // ============================================================================
-  //   GET /users/family/:familyId
+  //   GET /users/family/:familyId  only PARENT can get
   // ============================================================================
 
   @Get('family/:familyId')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PARENT)
   @ApiOperation({
     summary: 'Get users of a family',
     description: 'Retrieves all users of a family',
@@ -97,7 +101,7 @@ export class UsersController {
   }
 
   // ============================================================================
-  //  GET /users/user/:userId
+  //  GET /users/user/:userId  any authenticated user can get
   // ============================================================================
 
   @Get('user/:userId')
@@ -120,7 +124,7 @@ export class UsersController {
   }
 
   // ============================================================================
-  //  PATCH /users/family/:familyId/user/:userId
+  //  PATCH /users/family/:familyId/user/:userId    any authenticated user can update
   // ============================================================================
 
   @Patch('family/:familyId/user/:userId')
@@ -173,11 +177,13 @@ export class UsersController {
   }
 
   // ============================================================================
-  //  DELETE /users/user/:userId
+  //  DELETE /users/user/:userId    only PARENT can delete
   // ============================================================================
 
   @Delete('user/:userId')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PARENT)
   @ApiParam({
     name: 'userId',
     description: 'User ID',
