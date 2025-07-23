@@ -1,37 +1,35 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateFamilyDto } from './dto/create-family.dto';
 import { UserRole } from 'generated/prisma';
 import { UpdateFamilyDto } from './dto/update-family.dto';
+import { UsersService } from 'src/users/users.service';
+import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
 
 @Injectable()
 export class FamiliesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private usersService: UsersService,
+  ) {}
 
-  async create(role: UserRole, dto: CreateFamilyDto) {
-    if (role === 'CHILD') {
-      throw new UnauthorizedException(
-        'Only Parents are allowed to manage Family info',
-      );
-    }
+  async create(user: AuthenticatedUser, dto: CreateFamilyDto) {
     const family = await this.prisma.family.create({ data: dto });
 
-    // when family is created by user(Parent), then also update users familyId from null to familyId
+    const familyId = family.id;
+
+    await this.usersService.updateFamilyMember(
+      user.id,
+      user.role,
+      familyId,
+      user.id,
+      { familyId },
+    );
 
     return family;
   }
 
-  async findAll(role: UserRole) {
-    if (role === 'CHILD') {
-      throw new UnauthorizedException(
-        'Only Parents are allowed to manage Family info',
-      );
-    }
-
+  async findAll() {
     const families = await this.prisma.family.findMany();
     if (!families?.length) throw new NotFoundException('Families not found');
     return families;
@@ -40,17 +38,12 @@ export class FamiliesService {
   async findOne(id: string) {
     const family = await this.prisma.family.findUnique({ where: { id } });
     if (!family) {
-      throw new NotFoundException(`Family with ID "${id}" not found`);
+      throw new NotFoundException(`Family not found`);
     }
     return family;
   }
 
   async update(role: UserRole, id: string, dto: UpdateFamilyDto) {
-    if (role === 'CHILD') {
-      throw new UnauthorizedException(
-        'Only Parents are allowed to manage Family info',
-      );
-    }
     const family = await this.prisma.family.findUnique({ where: { id } });
     if (!family) {
       throw new NotFoundException(`Family with ID "${id}" not found`);
@@ -61,12 +54,7 @@ export class FamiliesService {
     });
   }
 
-  async remove(role: UserRole, id: string) {
-    if (role === 'CHILD') {
-      throw new UnauthorizedException(
-        'Only Parents are allowed to manage Family info',
-      );
-    }
+  async remove(id: string) {
     const family = await this.prisma.family.findUnique({ where: { id } });
     if (!family) {
       throw new NotFoundException(`Family with ID "${id}" not found`);
