@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getCurrentUser, logout } from '../../lib/auth';
 import { mockTasks, mockUsers } from '../../lib/mockData';
 import { TaskType, UserType } from '../../types';
-import { Clock, CheckCircle, XCircle, User, Calendar } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, Loader2, Send } from 'lucide-react';
 import PhotoUploadModal from '@/app/components/photoUploadModal';
 
 export default function ChildDashboard() {
@@ -131,11 +131,11 @@ export default function ChildDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Pending Tasks</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-2xl font-bold text-yellow-600">
                   {pendingTasks}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
+              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center text-yellow-600">
                 <Clock className="w-6 h-6" />
               </div>
             </div>
@@ -144,25 +144,25 @@ export default function ChildDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">In Progress</p>
-                <p className="text-2xl font-bold text-orange-600">
+                <p className="text-2xl font-bold text-blue-600">
                   {inProgressTasks}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600">
-                <User className="w-6 h-6" />
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
+                <Loader2 className="w-6 h-6" />
               </div>
             </div>
           </div>
           <div className="bg-white p-6 rounded-xl shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600"> Submitted</p>
+                <p className="text-sm text-gray-600">Submitted</p>
                 <p className="text-2xl font-bold text-purple-600">
                   {inReviewTasks}
                 </p>
               </div>
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600">
-                <Calendar className="w-6 h-6" />
+                <Send className="w-6 h-6" />
               </div>
             </div>
           </div>
