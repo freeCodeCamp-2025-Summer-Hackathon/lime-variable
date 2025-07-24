@@ -1,4 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsDate,
@@ -8,72 +7,40 @@ import {
   IsString,
   IsUrl,
   IsUUID,
+  MaxLength,
   MinLength,
 } from 'class-validator';
 
 export class CreateChoreDto {
-  @ApiProperty({
-    description: 'Title of the chore',
-    example: 'Clean the kitchen',
-    required: true,
-    type: String,
-  })
   @IsString({ message: 'Title must be a string' })
   @MinLength(5, { message: 'Title must be at least 5 characters long' })
+  @MaxLength(100, { message: 'Title must not exceed 100 characters' })
   @IsNotEmpty({ message: 'Title cannot be empty' })
-  title!: string;
-  //
-  @ApiProperty({
-    description: 'Points assigned to the chore',
-    example: 10,
-    required: true,
-    type: Number,
-  })
+  title: string;
+
   @IsNumber({}, { message: 'Points must be a number' })
   @IsNotEmpty({ message: 'Points cannot be empty' })
-  points!: number;
+  points: number;
 
   // Optional fields
-  @ApiProperty({
-    description: 'Proof photo URL',
-    example: 'https://example.com/photo.jpg',
-    required: false,
-    type: String,
-  })
+
   @IsUrl({}, { message: 'Image URL must be a valid URL' })
   @IsOptional()
+  @MaxLength(500, { message: 'Proof photo URL must not exceed 500 characters' })
   proofPhotoUrl?: string;
 
-  //
-  @ApiProperty({
-    description: 'Assigned to user ID',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-    required: false,
-    type: String,
-  })
   @IsUUID('all', { message: 'Assigned to must be a valid UUID' })
   @IsOptional()
   assignedTo?: string;
 
-  //
-  @ApiProperty({
-    description: 'Due date for the chore',
-    example: '2023-12-31T23:59:59.999Z',
-    required: false,
-    type: String,
-  })
   @IsDate({ message: 'Due date must be a valid date' })
   @IsOptional()
+  @MaxLength(100, { message: 'Due date must not exceed 100 characters' })
   @Type(() => Date)
   dueDate?: Date;
-  //
-  @ApiProperty({
-    description: 'Description of the chore',
-    example: 'Clean the kitchen thoroughly including dishes and floor',
-    required: false,
-    type: String,
-  })
+
   @IsString({ message: 'Description must be a string' })
   @IsOptional()
+  @MaxLength(500, { message: 'Description must not exceed 500 characters' })
   description?: string;
 }

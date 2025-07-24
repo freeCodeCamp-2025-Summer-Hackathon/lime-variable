@@ -5,4 +5,5 @@ export interface AuthenticatedUser {
   role: 'PARENT' | 'CHILD';
   createdAt: Date;
   updatedAt: Date;
+  familyId: string | null;
 }
