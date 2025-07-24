@@ -1,8 +1,8 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { User } from 'generated/prisma';
-import { GetUser } from 'src/auth/decorator/get-user.decorator';
-import { JwtGuard } from 'src/auth/guard/jwt.guard';
+import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { JwtGuard } from 'src/common/guards/jwt.guard';
 import { LeaderboardService } from './leaderboard.service';
 @UseGuards(JwtGuard)
 @Controller('leaderboard')
@@ -29,7 +29,7 @@ export class LeaderboardController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Require a family' })
-  getLeaderBoard(@GetUser() user: User) {
+  getLeaderBoard(@GetUser() user: AuthenticatedUser) {
     return this.leaderboardService.getLeaderBoard(user.familyId);
   }
 }
