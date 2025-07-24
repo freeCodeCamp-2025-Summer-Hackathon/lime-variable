@@ -1,10 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ChangeEvent } from 'react';
 
-const PhotoUploadModal = ({ onClose, onSubmit, taskId }) => {
-  const [selectedPhoto, setSelectedPhoto] = useState(null);
+type PhotoUploadModalProps = {
+  onClose?: () => void;
+  onSubmit?: (taskId: string, photoUrl: string) => void;
+  taskId: string;
+};
 
-  const handlePhotoUpload = (e) => {
-    const file = e.target.files[0];
+const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
+  onClose,
+  onSubmit,
+  taskId,
+}) => {
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+
+  const handlePhotoUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
       setSelectedPhoto(imageUrl);
@@ -39,7 +49,7 @@ const PhotoUploadModal = ({ onClose, onSubmit, taskId }) => {
           Upload Proof Photo
         </h3>
         <p className="text-sm text-gray-600 mb-4">
-          Take a photo to show you've completed the task!
+          Take a photo to show you&apos;ve completed the task!
         </p>
 
         <div className="mb-4">
