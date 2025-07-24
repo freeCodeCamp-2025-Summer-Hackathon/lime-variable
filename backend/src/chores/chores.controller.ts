@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   UseGuards,
@@ -18,14 +19,17 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { User } from 'generated/prisma';
+import { UserRole } from 'generated/prisma';
+import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { JwtGuard } from 'src/common/guards/jwt.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
 import { ChoresService } from './chores.service';
 import { ApprovalChoreDto } from './dto/approve-chore.dto';
 import { AssignChoreDto } from './dto/assign-chore.dto';
 import { CreateChoreDto } from './dto/create-chore.dto';
 import { UpdateChoreDto } from './dto/update-chore.dto';
-import { JwtGuard } from 'src/common/guards/jwt.guard';
-import { GetUser } from 'src/common/decorators/get-user.decorator';
 
 @UseGuards(JwtGuard)
 @ApiBearerAuth()
@@ -35,6 +39,8 @@ export class ChoresController {
   constructor(private readonly choresService: ChoresService) {}
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PARENT)
   @ApiOperation({ summary: 'Create a new chore' })
   @ApiBadRequestResponse({
     description:
@@ -44,11 +50,16 @@ export class ChoresController {
     description: 'You do not have permission to create a chore',
   })
   @ApiInternalServerErrorResponse({ description: 'Chore could not be created' })
-  create(@Body() createChoreDto: CreateChoreDto, @GetUser() user: User) {
+  create(
+    @Body() createChoreDto: CreateChoreDto,
+    @GetUser() user: AuthenticatedUser,
+  ) {
     return this.choresService.create(createChoreDto, user);
   }
 
   @Patch(':id/assign')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PARENT)
   @ApiOperation({ summary: 'Assign a chore to a user' })
   @ApiNotFoundResponse({ description: 'Chore does not exist' })
   @ApiBadRequestResponse({ description: 'Assigned user not found' })
@@ -59,9 +70,9 @@ export class ChoresController {
     description: 'Chore could not be assigned',
   })
   assign(
-    @Param('id') choreId: string,
+    @Param('id', ParseUUIDPipe) choreId: string,
     @Body() userToBeAssigned: AssignChoreDto,
-    @GetUser() user: User,
+    @GetUser() user: AuthenticatedUser,
   ) {
     return this.choresService.assign(
       choreId,
@@ -79,11 +90,16 @@ export class ChoresController {
   @ApiInternalServerErrorResponse({
     description: 'Chore could not be submitted',
   })
-  submit(@Param('id') choreId: string, @GetUser('id') userId: string) {
+  submit(
+    @Param('id', ParseUUIDPipe) choreId: string,
+    @GetUser('id') userId: string,
+  ) {
     return this.choresService.submit(choreId, userId);
   }
 
   @Patch(':id/approval')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PARENT)
   @ApiOperation({ summary: 'Approve or reject a submitted chore' })
   @ApiNotFoundResponse({ description: 'Chore does not exist' })
   @ApiUnauthorizedResponse({
@@ -96,17 +112,19 @@ export class ChoresController {
     description: 'Chore could not be approved',
   })
   approve(
-    @Param('id') choreId: string,
+    @Param('id', ParseUUIDPipe) choreId: string,
     @Body() approvalChoreDto: ApprovalChoreDto,
-    @GetUser() user: User,
+    @GetUser() user: AuthenticatedUser,
   ) {
     return this.choresService.approve(choreId, user, approvalChoreDto.status);
   }
 
   @Get()
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PARENT)
   @ApiOperation({ summary: 'Get all chores created by the user' })
   @ApiInternalServerErrorResponse({ description: 'Could not fetch chores' })
-  findAll(@GetUser() user: User) {
+  findAll(@GetUser() user: AuthenticatedUser) {
     return this.choresService.findAll(user);
   }
 
@@ -117,7 +135,10 @@ export class ChoresController {
     description: 'User is not the creator of the chore',
   })
   @ApiInternalServerErrorResponse({ description: 'Could not fetch chore' })
-  findOne(@Param('id') choreId: string, @GetUser() user: User) {
+  findOne(
+    @Param('id', ParseUUIDPipe) choreId: string,
+    @GetUser() user: AuthenticatedUser,
+  ) {
     return this.choresService.findOne(user, choreId);
   }
 
@@ -129,21 +150,26 @@ export class ChoresController {
   })
   @ApiInternalServerErrorResponse({ description: 'Chore could not be updated' })
   update(
-    @Param('id') choreId: string,
+    @Param('id', ParseUUIDPipe) choreId: string,
     @Body() updateChoreDto: UpdateChoreDto,
-    @GetUser() user: User,
+    @GetUser() user: AuthenticatedUser,
   ) {
     return this.choresService.update(choreId, updateChoreDto, user);
   }
 
   @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PARENT)
   @ApiOperation({ summary: 'Delete a specific chore' })
   @ApiBadRequestResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({
     description: 'You do not have permission to delete the resource',
   })
   @ApiInternalServerErrorResponse({ description: 'Chore could not be deleted' })
-  remove(@Param('id') id: string, @GetUser() user: User) {
+  remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @GetUser() user: AuthenticatedUser,
+  ) {
     return this.choresService.remove(id, user);
   }
 }

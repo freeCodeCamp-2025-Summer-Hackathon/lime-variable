@@ -7,12 +7,14 @@ import {
   IsString,
   IsUrl,
   IsUUID,
+  MaxLength,
   MinLength,
 } from 'class-validator';
 
 export class CreateChoreDto {
   @IsString({ message: 'Title must be a string' })
   @MinLength(5, { message: 'Title must be at least 5 characters long' })
+  @MaxLength(100, { message: 'Title must not exceed 100 characters' })
   @IsNotEmpty({ message: 'Title cannot be empty' })
   title: string;
 
@@ -24,6 +26,7 @@ export class CreateChoreDto {
 
   @IsUrl({}, { message: 'Image URL must be a valid URL' })
   @IsOptional()
+  @MaxLength(500, { message: 'Proof photo URL must not exceed 500 characters' })
   proofPhotoUrl?: string;
 
   @IsUUID('all', { message: 'Assigned to must be a valid UUID' })
@@ -32,10 +35,12 @@ export class CreateChoreDto {
 
   @IsDate({ message: 'Due date must be a valid date' })
   @IsOptional()
+  @MaxLength(100, { message: 'Due date must not exceed 100 characters' })
   @Type(() => Date)
   dueDate?: Date;
 
   @IsString({ message: 'Description must be a string' })
   @IsOptional()
+  @MaxLength(500, { message: 'Description must not exceed 500 characters' })
   description?: string;
 }
