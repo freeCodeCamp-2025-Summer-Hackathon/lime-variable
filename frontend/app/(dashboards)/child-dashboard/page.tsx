@@ -112,7 +112,7 @@ export default function ChildDashboard() {
   const taskSections = [
     {
       key: 'rejected',
-      title: '🚨 Needs Attention',
+      title: 'Needs Attention',
       subtitle: 'Tasks that need to be redone',
       tasks: tasksByStatus.rejected,
       bgColor: 'bg-red-50',
@@ -123,7 +123,7 @@ export default function ChildDashboard() {
     },
     {
       key: 'in_progress',
-      title: '🚀 In Progress',
+      title: 'In Progress',
       subtitle: "Tasks you're currently working on",
       tasks: tasksByStatus.in_progress,
       bgColor: 'bg-blue-50',
@@ -134,7 +134,7 @@ export default function ChildDashboard() {
     },
     {
       key: 'pending',
-      title: '⏳ Ready to Start',
+      title: 'Ready to Start',
       subtitle: 'New tasks waiting for you',
       tasks: tasksByStatus.pending,
       bgColor: 'bg-yellow-50',
@@ -145,7 +145,7 @@ export default function ChildDashboard() {
     },
     {
       key: 'submitted',
-      title: '👀 Under Review',
+      title: 'Under Review',
       subtitle: 'Waiting for parent approval',
       tasks: tasksByStatus.submitted,
       bgColor: 'bg-purple-50',
@@ -156,7 +156,7 @@ export default function ChildDashboard() {
     },
     {
       key: 'completed',
-      title: '✅ Completed',
+      title: 'Completed',
       subtitle: 'Great job! Points earned',
       tasks: tasksByStatus.completed,
       bgColor: 'bg-green-50',
@@ -387,7 +387,7 @@ export default function ChildDashboard() {
                     <div
                       className={`w-10 h-10 ${section.bgColor} rounded-lg flex items-center justify-center ${section.iconColor}`}
                     >
-                      <Icon className="w-5 h-5" />
+                      <Icon className="w-8 h-8" />
                     </div>
                     <div>
                       <h2 className="text-xl font-semibold text-gray-800">
