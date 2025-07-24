@@ -37,7 +37,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     // Create a family
     const family = await this.family.create({
       data: {
-        name: 'Test Family',
+        name: 'Test Family 1',
       },
     });
 
@@ -63,7 +63,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
         familyId: family.id,
       },
     });
-
     // Create a chore assigned to the child
     await this.chore.createMany({
       data: [
@@ -75,6 +74,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
           createdBy: parent.id,
           assignedBy: parent.id,
           assignedTo: child.id,
+          familyId: family.id,
         },
         {
           title: 'Test Chore 2',
@@ -84,6 +84,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
           createdBy: parent.id,
           assignedBy: parent.id,
           assignedTo: child.id,
+          familyId: family.id,
         },
       ],
     });

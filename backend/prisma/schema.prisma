@@ -29,6 +29,7 @@ model Family {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   members   User[]
+  Chore     Chore[]
 
   @@map("families")
 }
@@ -69,16 +70,18 @@ model Chore {
   proofPhotoUrl String?
 
   createdBy  String  @db.Uuid
-  assignedBy String  @db.Uuid
+  assignedBy String?  @db.Uuid
   assignedTo String? @db.Uuid
+  familyId   String  @db.Uuid
 
   submittedAt DateTime?
   approvedAt  DateTime?
   rejectedAt  DateTime?
 
-  createdByUser  User  @relation("CreatedByUser", fields: [createdBy], references: [id])
-  assignedByUser User  @relation("AssignedByUser", fields: [assignedBy], references: [id])
-  assignedToUser User? @relation("AssignedToUser", fields: [assignedTo], references: [id])
+  family         Family @relation(fields: [familyId], references: [id])
+  createdByUser  User   @relation("CreatedByUser", fields: [createdBy], references: [id])
+  assignedByUser User?   @relation("AssignedByUser", fields: [assignedBy], references: [id])
+  assignedToUser User?  @relation("AssignedToUser", fields: [assignedTo], references: [id])
 
   @@map("chores")
 }
