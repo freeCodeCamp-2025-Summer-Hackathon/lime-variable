@@ -166,7 +166,7 @@ export default function TaskForm({
       </div>
 
       <div className="flex space-x-3 pt-4">
-        <Button>+ Create Task</Button>
+        <Button type='submit'>+ Create Task</Button>
         <Button variant="secondary" onClick={onCancel}>
           Cancel
         </Button>

@@ -8,7 +8,7 @@ Turns everyday chores into a fun, rewarding experience. Designed for families, i
 
 ## 🌐 Deployed version
 
-https://lime-variables.vercel.app/
+https://lime-variable.vercel.app/
 
 ## 🛠️ Tech Stack
 
