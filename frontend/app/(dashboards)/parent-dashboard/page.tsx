@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUser, logout } from '../../lib/auth';
 import { UserType, TaskType } from '../../types';
-import Modal from '@/app/components/modal';
+import TaskModal from '@/app/components/newTaskModal';
 import TaskForm from '@/app/components/task-form';
 import TasksWidget from '@/app/components/tasksWidget';
 import { mockUsers as users, mockTasks } from '../../lib/mockData';
@@ -67,7 +67,7 @@ export default function ParentDashboard() {
       </div>
       {/* Modal */}
       {openModal && (
-        <Modal onClose={closeModal}>
+        <TaskModal onClose={closeModal}>
           <TaskForm
             onCancel={closeModal}
             usersToAssignTo={users.filter((user) => user.role === 'child')}
@@ -87,7 +87,7 @@ export default function ParentDashboard() {
               setTasks((prevTasks) => [...prevTasks, newTask]);
             }}
           />
-        </Modal>
+        </TaskModal>
       )}
       {/* Task Widget */}
       <TasksWidget tasks={tasks} users={users} />

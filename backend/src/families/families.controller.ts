@@ -14,8 +14,8 @@ import { CreateFamilyDto } from './dto/create-family.dto';
 import { FamiliesService } from './families.service';
 import { Family, UserRole } from 'generated/prisma';
 import { UpdateFamilyDto } from './dto/update-family.dto';
-import { GetUser } from 'src/auth/decorator/get-user.decorator';
-import { JwtGuard } from 'src/auth/guard/jwt.guard';
+import { JwtGuard } from 'src/common/guards/jwt.guard';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -28,6 +28,9 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { AuthenticatedUser } from 'src/auth/interfaces/authenticated-user.interface';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
 
 @ApiTags('families')
 @UseGuards(JwtGuard)
@@ -49,13 +52,29 @@ export class FamiliesController {
     description: 'Create family data',
     type: CreateFamilyDto,
   })
-  @ApiUnauthorizedResponse({ description: 'Only Parents are allowed.' })
   @ApiCreatedResponse({ description: 'Family created successfully.' })
   create(
-    @GetUser('role') role: UserRole,
+    @GetUser() user: AuthenticatedUser,
     @Body() dto: CreateFamilyDto,
   ): Promise<Family> {
-    return this.familyService.create(role, dto);
+    return this.familyService.create(user, dto);
+  }
+
+  // ============================================================================
+  // READ ALL FAMILY ENDPOINT - GET
+  // ============================================================================
+
+  @Get()
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PARENT)
+  @ApiOperation({
+    summary: 'Get families',
+    description: 'Retrieves all specific family',
+  })
+  @ApiOkResponse({ description: 'Got families successfully' })
+  @ApiNotFoundResponse({ description: 'Families not found' })
+  findAll(): Promise<Family[]> {
+    return this.familyService.findAll();
   }
 
   // ============================================================================
@@ -63,6 +82,8 @@ export class FamiliesController {
   // ============================================================================
 
   @Get(':id')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PARENT)
   @ApiOperation({
     summary: 'Get family by ID',
     description: 'Retrieves a specific family by their unique identifier',
@@ -83,6 +104,8 @@ export class FamiliesController {
   // =================================================================
 
   @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PARENT)
   @ApiParam({
     name: 'id',
     description: 'Family ID',
@@ -91,7 +114,6 @@ export class FamiliesController {
   @ApiBody({ description: 'Family update data' })
   @ApiOkResponse({ description: 'Family updated successfully.' })
   @ApiNotFoundResponse({ description: 'Family not found.' })
-  @ApiUnauthorizedResponse({ description: 'Only Parents are allowed.' })
   update(
     @GetUser('role') role: UserRole,
     @Param('id') id: string,
@@ -106,6 +128,8 @@ export class FamiliesController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PARENT)
   @ApiParam({
     name: 'id',
     description: 'Family ID',
@@ -114,10 +138,7 @@ export class FamiliesController {
   @ApiUnauthorizedResponse({ description: 'Only Parents are allowed.' })
   @ApiNotFoundResponse({ description: 'Family not found.' })
   @ApiNoContentResponse({ description: 'Family deleted successfully.' })
-  remove(
-    @GetUser('role') role: UserRole,
-    @Param('id') id: string,
-  ): Promise<void> {
-    return this.familyService.remove(role, id);
+  remove(@Param('id') id: string): Promise<void> {
+    return this.familyService.remove(id);
   }
 }

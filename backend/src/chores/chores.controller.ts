@@ -9,11 +9,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { User } from 'generated/prisma';
-import { GetUser } from 'src/auth/decorator/get-user.decorator';
-import { JwtGuard } from 'src/auth/guard/jwt.guard';
 import { ChoresService } from './chores.service';
 import { CreateChoreDto } from './dto/create-chore.dto';
 import { UpdateChoreDto } from './dto/update-chore.dto';
+import { JwtGuard } from 'src/common/guards/jwt.guard';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
 
 @UseGuards(JwtGuard)
 @Controller('chores')
