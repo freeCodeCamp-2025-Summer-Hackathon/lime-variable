@@ -80,6 +80,18 @@ export const mockTasks: TaskType[] = [
     createdAt: '2025-07-05',
     completedAt: '2025-07-07',
   },
+  {
+    id: '5',
+    title: 'Feed the Pet',
+    description: 'Feed our cat Soso',
+    assignedTo: '3',
+    assignedBy: '2',
+    points: 15,
+    status: 'rejected',
+    dueDate: '2025-07-08',
+    createdAt: '2025-07-06',
+    completedAt: '2025-07-07',
+  },
 ];
 
 export const mockRewards: RewardType[] = [
