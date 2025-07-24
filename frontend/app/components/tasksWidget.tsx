@@ -4,9 +4,10 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  User,
+  Send,
   Calendar,
   Award,
+  Loader2,
 } from 'lucide-react';
 
 const TasksWidget = ({
@@ -51,9 +52,9 @@ const TasksWidget = ({
       case 'pending':
         return <Clock className="w-4 h-4" />;
       case 'in_progress':
-        return <User className="w-4 h-4" />;
+        return <Loader2 className="w-4 h-4" />;
       case 'submitted':
-        return <Calendar className="w-4 h-4" />;
+        return <Send className="w-4 h-4" />;
       case 'completed':
         return <CheckCircle className="w-4 h-4" />;
       case 'rejected':
