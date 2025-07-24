@@ -27,8 +27,7 @@ export class ChoresService {
       status: ChoreStatus.PENDING,
       assignedTo: createChoreDto.assignedTo || null,
       familyId: user.familyId,
-      // ! should we add this if it was a bounty?
-      assignedBy: user.id,
+      assignedBy: createChoreDto.assignedTo ? user.id : null,
     };
     if (createChoreDto.assignedTo) {
       const assignedUser = await this.prisma.user.findUnique({
