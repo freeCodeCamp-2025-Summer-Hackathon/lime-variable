@@ -1,26 +1,18 @@
-// app/child-dashboard/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUser, logout } from '../../lib/auth';
-import { mockTasks, mockUsers, mockRewards } from '../../lib/mockData';
-import { TaskType, UserType, RewardType } from '../../types';
-import {
-  Clock,
-  CheckCircle,
-  XCircle,
-  User,
-  Calendar,
-  Award,
-} from 'lucide-react';
+import { mockTasks, mockUsers } from '../../lib/mockData';
+import { TaskType, UserType } from '../../types';
+import { Clock, CheckCircle, XCircle, User, Calendar } from 'lucide-react';
+import PhotoUploadModal from '@/app/components/photoUploadModal';
 
 export default function ChildDashboard() {
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [tasks, setTasks] = useState<TaskType[]>([]);
-  const [rewards] = useState<RewardType[]>(mockRewards);
   const [showPhotoUpload, setShowPhotoUpload] = useState<string | null>(null);
-  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [taskPhotos, setTaskPhotos] = useState<Record<string, string>>({});
   const router = useRouter();
 
   useEffect(() => {
@@ -30,7 +22,6 @@ export default function ChildDashboard() {
       return;
     }
     setCurrentUser(user);
-    // Filter tasks assigned to this child
     setTasks(mockTasks.filter((t) => t.assignedTo === user.id));
   }, [router]);
 
@@ -46,23 +37,26 @@ export default function ChildDashboard() {
     );
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setSelectedPhoto(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+  const handlePhotoSelect = (taskId: string, photoUrl: string) => {
+    setTaskPhotos((prev) => ({ ...prev, [taskId]: photoUrl }));
+    setShowPhotoUpload(null);
   };
 
-  const submitTaskWithPhoto = (taskId: string) => {
-    if (selectedPhoto) {
-      handleTaskStatusUpdate(taskId, 'submitted', selectedPhoto);
-      setShowPhotoUpload(null);
-      setSelectedPhoto(null);
-    }
+  const handleRemovePhoto = (taskId: string) => {
+    setTaskPhotos((prev) => {
+      const updated = { ...prev };
+      delete updated[taskId];
+      return updated;
+    });
+  };
+
+  const handleSubmitTask = (taskId: string) => {
+    const photoUrl = taskPhotos[taskId];
+    handleTaskStatusUpdate(taskId, 'submitted', photoUrl);
+  };
+
+  const handleModalClose = () => {
+    setShowPhotoUpload(null);
   };
 
   const handleLogout = () => {
@@ -162,7 +156,7 @@ export default function ChildDashboard() {
           <div className="bg-white p-6 rounded-xl shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Submitted</p>
+                <p className="text-sm text-gray-600"> Submitted</p>
                 <p className="text-2xl font-bold text-purple-600">
                   {inReviewTasks}
                 </p>
@@ -240,25 +234,54 @@ export default function ChildDashboard() {
                   </div>
                 )}
 
-                <div className="flex space-x-2">
+                {/* Show selected photo if exists */}
+                {taskPhotos[task.id] && (
+                  <div className="mt-3 flex items-start space-x-3">
+                    <img
+                      src={taskPhotos[task.id]}
+                      alt="Task proof"
+                      className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200"
+                    />
+                    <button
+                      onClick={() => handleRemovePhoto(task.id)}
+                      className="bg-red-100 text-red-700 px-3 py-1 rounded-lg hover:bg-red-200 transition-colors text-sm cursor-pointer"
+                    >
+                      🗑️ Remove Photo
+                    </button>
+                  </div>
+                )}
+
+                <div className="flex space-x-2 mt-3">
                   {task.status === 'pending' && (
                     <button
                       onClick={() =>
                         handleTaskStatusUpdate(task.id, 'in_progress')
                       }
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
                     >
                       🚀 Start Task
                     </button>
                   )}
 
                   {task.status === 'in_progress' && (
-                    <button
-                      onClick={() => setShowPhotoUpload(task.id)}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      📷 Submit with Photo
-                    </button>
+                    <>
+                      <button
+                        onClick={() => setShowPhotoUpload(task.id)}
+                        className={`px-4 py-2 rounded-lg transition-colors ${
+                          taskPhotos[task.id]
+                            ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                            : 'bg-purple-600 text-white hover:bg-purple-700 cursor-pointer'
+                        }`}
+                      >
+                        📷 Add Photo
+                      </button>
+                      <button
+                        onClick={() => handleSubmitTask(task.id)}
+                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors cursor-pointer"
+                      >
+                        Submit Task ➤
+                      </button>
+                    </>
                   )}
 
                   {task.status === 'submitted' && (
@@ -297,6 +320,15 @@ export default function ChildDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Photo Upload Modal */}
+      {showPhotoUpload && (
+        <PhotoUploadModal
+          onClose={handleModalClose}
+          onSubmit={handlePhotoSelect}
+          taskId={showPhotoUpload}
+        />
+      )}
     </div>
   );
 }
