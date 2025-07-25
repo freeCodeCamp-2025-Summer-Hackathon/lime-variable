@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as argon from 'argon2';
 import { ChoreStatus, PrismaClient, UserRole } from 'generated/prisma';
 
 @Injectable()
-export class PrismaService extends PrismaClient {
-  constructor(config: ConfigService) {
+export class PrismaService extends PrismaClient implements OnModuleInit {
+  constructor(private config: ConfigService) {
     super({
       datasources: {
         db: {
@@ -14,6 +14,7 @@ export class PrismaService extends PrismaClient {
       },
     });
   }
+
   async cleanDB() {
     // ! MUST be in order bc of foreign key dependencies
     await this.$transaction([
@@ -22,6 +23,16 @@ export class PrismaService extends PrismaClient {
       this.family.deleteMany(),
     ]);
   }
+
+  async onModuleInit() {
+    const isDev = this.config.get('NODE_ENV') === 'development';
+    if (isDev) {
+      console.log('🌱 Running seed in dev mode...');
+      await this.cleanDB();
+      await this.seedDb();
+    }
+  }
+
   async seedDb() {
     // Create a family
     const family = await this.family.create({
