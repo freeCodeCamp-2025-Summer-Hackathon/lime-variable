@@ -6,8 +6,7 @@ export async function handleLogin(
   email: string,
   password: string
 ): Promise<JSON | null> {
-  
-  const loginUrl: string = 'http://localhost:5432/auth/login';
+  const loginUrl: string = 'auth/login';
   const request: Response = await fetch(loginUrl, {
     method: 'POST',
     headers: {
@@ -32,7 +31,7 @@ export async function handleSignUp(
   email: string,
   password: string
 ): Promise<JSON | null> {
-  const signUpUrl: string = 'http://localhost:5432/auth/register-user';
+  const signUpUrl: string = 'auth/register-user';
 
   const request: Response = await fetch(signUpUrl, {
     method: 'POST',
