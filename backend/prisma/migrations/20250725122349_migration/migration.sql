@@ -42,8 +42,9 @@ CREATE TABLE "chores" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "proofPhotoUrl" TEXT,
     "createdBy" UUID NOT NULL,
-    "assignedBy" UUID NOT NULL,
+    "assignedBy" UUID,
     "assignedTo" UUID,
+    "familyId" UUID NOT NULL,
     "submittedAt" TIMESTAMP(3),
     "approvedAt" TIMESTAMP(3),
     "rejectedAt" TIMESTAMP(3),
@@ -61,10 +62,13 @@ CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 ALTER TABLE "users" ADD CONSTRAINT "users_familyId_fkey" FOREIGN KEY ("familyId") REFERENCES "families"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "chores" ADD CONSTRAINT "chores_familyId_fkey" FOREIGN KEY ("familyId") REFERENCES "families"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "chores" ADD CONSTRAINT "chores_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "chores" ADD CONSTRAINT "chores_assignedBy_fkey" FOREIGN KEY ("assignedBy") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "chores" ADD CONSTRAINT "chores_assignedBy_fkey" FOREIGN KEY ("assignedBy") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "chores" ADD CONSTRAINT "chores_assignedTo_fkey" FOREIGN KEY ("assignedTo") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
