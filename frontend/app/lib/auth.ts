@@ -6,22 +6,7 @@ export async function handleLogin(
   email: string,
   password: string
 ): Promise<JSON | null> {
-  // adding one user to help with testing
-  // const addUser: Response = await fetch(
-  //   'http://localhost:5432/auth/register-user',
-  //   {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: JSON.stringify({
-  //       name: 'Tasneem Ali',
-  //       email: 'tasneem@example.com',
-  //       password: 'password123',
-  //     }),
-  //   }
-  // );
-
+  
   const loginUrl: string = 'http://localhost:5432/auth/login';
   const request: Response = await fetch(loginUrl, {
     method: 'POST',
