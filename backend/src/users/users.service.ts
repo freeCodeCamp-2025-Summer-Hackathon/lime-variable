@@ -85,18 +85,29 @@ export class UsersService {
     return userData;
   }
 
-  async getFamilyMembers(familyId: string) {
-    const users = await this.prisma.user.findMany({
+  async getFamilyMembers(user: AuthenticatedUser, familyId: string) {
+    const family = await this.prisma.family.findUnique({
       where: {
-        familyId,
+        id: familyId,
       },
-      omit: {
-        passwordHash: true,
+      include: {
+        members: {
+          omit: {
+            passwordHash: true,
+          },
+        },
       },
     });
-    if (!users?.length)
+
+    if (!family) throw new NotFoundException('Family not found');
+    if (!family.members.length) {
       throw new NotFoundException('Users not found in this families');
-    return users;
+    }
+    if (!family.members.some((member) => member.id === user.id)) {
+      throw new ForbiddenException("You can't access others families");
+    }
+
+    return family.members;
   }
 
   async findOne(id: string) {
@@ -124,12 +135,6 @@ export class UsersService {
       throw new UnauthorizedException("You can't change your role or family");
     }
 
-    if (
-      !ValidationUtil.isValidUUID(familyId) ||
-      !ValidationUtil.isValidUUID(userId)
-    ) {
-      throw new BadRequestException('Invalid ID format');
-    }
     const currentUser = await this.prisma.user.findUnique({
       where: { id: currentUserId },
       select: { id: true, name: true, email: true, familyId: true, role: true },

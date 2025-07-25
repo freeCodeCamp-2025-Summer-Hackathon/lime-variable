@@ -109,9 +109,10 @@ export class UsersController {
   @ApiOkResponse({ description: 'Got family members successfully' })
   @ApiNotFoundResponse({ description: 'Users not found' })
   getFamilyMembers(
+    @GetUser() user: AuthenticatedUser,
     @Param('familyId', ParseUUIDPipe) familyId: string,
   ): Promise<Omit<User, 'passwordHash'>[]> {
-    return this.usersService.getFamilyMembers(familyId);
+    return this.usersService.getFamilyMembers(user, familyId);
   }
 
   // ============================================================================
@@ -178,14 +179,15 @@ export class UsersController {
   updateFamilyMember(
     @GetUser('id') currentUserId: string,
     @GetUser('role') currentUserRole: UserRole,
-    @Param() params: { familyId: string; userId: string },
+    @Param('familyId', ParseUUIDPipe) familyId: string,
+    @Param('userId', ParseUUIDPipe) userId: string,
     @Body() dto: UpdateUserDto,
   ): Promise<Omit<User, 'passwordHash'>> {
     return this.usersService.updateFamilyMember(
       currentUserId,
       currentUserRole,
-      params.familyId,
-      params.userId,
+      familyId,
+      userId,
       dto,
     );
   }

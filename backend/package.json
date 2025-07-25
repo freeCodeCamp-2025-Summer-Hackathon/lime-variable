@@ -19,6 +19,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prepare": "cd ../ && husky backend/.husky",
+    "prisma:studio": "dotenv -e .env.development -- pnpm exec prisma studio",
     "prisma:dev:push": "dotenv -e .env.development -- prisma db push",
     "prisma:test:push": "dotenv -e .env.test -- prisma db push",
     "prisma:prod:push": "dotenv -e .env.production -- prisma db push",

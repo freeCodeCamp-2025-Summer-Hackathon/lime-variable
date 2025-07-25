@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateFamilyDto } from './dto/create-family.dto';
 import { UserRole } from 'generated/prisma';
@@ -14,17 +18,15 @@ export class FamiliesService {
   ) {}
 
   async create(user: AuthenticatedUser, dto: CreateFamilyDto) {
-    const family = await this.prisma.family.create({ data: dto });
-
-    const familyId = family.id;
-
-    await this.usersService.updateFamilyMember(
-      user.id,
-      user.role,
-      familyId,
-      user.id,
-      { familyId },
-    );
+    if (user.familyId) {
+      throw new BadRequestException(
+        "You already have family, you can't create multiple families",
+      );
+    }
+    const family = await this.prisma.family.create({
+      data: { ...dto, members: { connect: { id: user.id } } },
+      include: { members: { omit: { passwordHash: true } } },
+    });
 
     return family;
   }
@@ -66,7 +68,7 @@ export class FamiliesService {
   async remove(id: string) {
     const family = await this.prisma.family.findUnique({ where: { id } });
     if (!family) {
-      throw new NotFoundException(`Family with ID "${id}" not found`);
+      throw new NotFoundException(`Family not found`);
     }
     await this.prisma.family.delete({ where: { id } });
   }

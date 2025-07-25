@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   UseGuards,
@@ -95,7 +96,7 @@ export class FamiliesController {
   })
   @ApiOkResponse({ description: 'Got family successfully.' })
   @ApiNotFoundResponse({ description: 'Family not found.' })
-  findOne(@Param('id') id: string): Promise<Family> {
+  findOne(@Param('id', ParseUUIDPipe) id: string): Promise<Family> {
     return this.familyService.findOne(id);
   }
 
@@ -116,7 +117,7 @@ export class FamiliesController {
   @ApiNotFoundResponse({ description: 'Family not found.' })
   update(
     @GetUser('role') role: UserRole,
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateFamilyDto,
   ): Promise<Family> {
     return this.familyService.update(role, id, dto);
@@ -138,7 +139,7 @@ export class FamiliesController {
   @ApiUnauthorizedResponse({ description: 'Only Parents are allowed.' })
   @ApiNotFoundResponse({ description: 'Family not found.' })
   @ApiNoContentResponse({ description: 'Family deleted successfully.' })
-  remove(@Param('id') id: string): Promise<void> {
+  remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.familyService.remove(id);
   }
 }
