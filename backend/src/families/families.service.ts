@@ -24,16 +24,8 @@ export class FamiliesService {
       );
     }
     const family = await this.prisma.family.create({
-      data: dto,
-    });
-
-    await this.prisma.user.update({
-      where: {
-        id: user.id,
-      },
-      data: {
-        familyId: family.id,
-      },
+      data: { ...dto, members: { connect: { id: user.id } } },
+      include: { members: { omit: { passwordHash: true } } },
     });
 
     return family;

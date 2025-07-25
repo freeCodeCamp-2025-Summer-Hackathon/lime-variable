@@ -109,9 +109,10 @@ export class UsersController {
   @ApiOkResponse({ description: 'Got family members successfully' })
   @ApiNotFoundResponse({ description: 'Users not found' })
   getFamilyMembers(
+    @GetUser() user: AuthenticatedUser,
     @Param('familyId', ParseUUIDPipe) familyId: string,
   ): Promise<Omit<User, 'passwordHash'>[]> {
-    return this.usersService.getFamilyMembers(familyId);
+    return this.usersService.getFamilyMembers(user, familyId);
   }
 
   // ============================================================================

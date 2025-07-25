@@ -85,28 +85,29 @@ export class UsersService {
     return userData;
   }
 
-  async getFamilyMembers(familyId: string) {
+  async getFamilyMembers(user: AuthenticatedUser, familyId: string) {
     const family = await this.prisma.family.findUnique({
       where: {
         id: familyId,
       },
+      include: {
+        members: {
+          omit: {
+            passwordHash: true,
+          },
+        },
+      },
     });
 
-    if (!family) {
-      throw new NotFoundException('Family not found');
+    if (!family) throw new NotFoundException('Family not found');
+    if (!family.members.some((member) => member.id === user.id)) {
+      throw new ForbiddenException("You can't access others families");
+    }
+    if (!family.members.length) {
+      throw new NotFoundException('Users not found in this families');
     }
 
-    const users = await this.prisma.user.findMany({
-      where: {
-        familyId,
-      },
-      omit: {
-        passwordHash: true,
-      },
-    });
-    if (!users?.length)
-      throw new NotFoundException('Users not found in this families');
-    return users;
+    return family.members;
   }
 
   async findOne(id: string) {
