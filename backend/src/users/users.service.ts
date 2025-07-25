@@ -100,11 +100,11 @@ export class UsersService {
     });
 
     if (!family) throw new NotFoundException('Family not found');
-    if (!family.members.some((member) => member.id === user.id)) {
-      throw new ForbiddenException("You can't access others families");
-    }
     if (!family.members.length) {
       throw new NotFoundException('Users not found in this families');
+    }
+    if (!family.members.some((member) => member.id === user.id)) {
+      throw new ForbiddenException("You can't access others families");
     }
 
     return family.members;
