@@ -43,13 +43,14 @@ async function apiCall(url: string, options: RequestInit = {}) {
 }
 
 export async function register(
+  name: string,
   email: string,
   password: string
 ): Promise<UserType> {
   try {
     const response: RegisterResponse = await apiCall('auth/register-user', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ name, email, password }),
     });
 
     if (typeof window !== 'undefined') {
@@ -184,6 +185,12 @@ export function validateTaskTitle(taskTitle: string): string {
 export function validateTaskDescription(taskDescription: string): string {
   if (taskDescription.length > 500)
     return 'Task Description must be less than or equal to 500 characters.';
+  return '';
+}
+
+export function validateName(name: string): string {
+  const nameRegex = /^[\p{L}\p{M}\s'-.]+$/u;
+  if (!nameRegex.test(name)) return 'Please enter a valid name';
   return '';
 }
 

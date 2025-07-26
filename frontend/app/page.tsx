@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Login from './components/login';
-import SignUp from './components/signUp';
+import SignUp from './components/signup';
 
 export default function Home() {
   const [showSignUp, setShowSignUp] = useState(false);

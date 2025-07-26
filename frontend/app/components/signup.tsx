@@ -2,7 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { register, validateEmail, validatePassword } from '../lib/auth';
+import {
+  register,
+  validateName,
+  validateEmail,
+  validatePassword,
+} from '../lib/auth';
 import Button from './ui/button';
 
 interface SignUpProps {
@@ -10,10 +15,12 @@ interface SignUpProps {
 }
 
 export default function SignUp({ onToggleToLogin }: SignUpProps) {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState({
+    name: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -24,6 +31,7 @@ export default function SignUp({ onToggleToLogin }: SignUpProps) {
 
   const validateForm = () => {
     const newErrors = {
+      name: validateName(name),
       email: validateEmail(email),
       password: validatePassword(password),
       confirmPassword:
@@ -46,7 +54,7 @@ export default function SignUp({ onToggleToLogin }: SignUpProps) {
     setErrors((prev) => ({ ...prev, general: '' }));
 
     try {
-      const user = await register(email, password);
+      const user = await register(name, email, password);
 
       // Redirect based on user role
       if (user.role === 'parent') {
@@ -61,6 +69,14 @@ export default function SignUp({ onToggleToLogin }: SignUpProps) {
       }));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setName(value);
+    if (errors.name) {
+      setErrors((prev) => ({ ...prev, email: validateEmail(value) }));
     }
   };
 
@@ -110,6 +126,24 @@ export default function SignUp({ onToggleToLogin }: SignUpProps) {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Name
+          </label>
+          <input
+            type="text"
+            value={name}
+            onChange={handleNameChange}
+            className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
+            }`}
+            placeholder="Enter your Name"
+            required
+          />
+          {errors.name && (
+            <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+          )}
+        </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Email Address
