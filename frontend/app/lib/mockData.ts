@@ -1,6 +1,6 @@
-import { UserType, TaskType, RewardType } from '../types';
+import { TaskType, RewardType } from '../types';
 
-export const mockUsers: UserType[] = [
+export const mockUsers = [
   {
     id: '1',
     name: 'Tasneem Ali',

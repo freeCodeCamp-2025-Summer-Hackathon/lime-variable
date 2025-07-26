@@ -24,7 +24,7 @@ export default function Login({ onToggleToSignUp }: LoginProps) {
 
     try {
       const user = await login(email, password);
-      if (user.role === 'parent') {
+      if (user.role === 'PARENT') {
         router.push('/parent-dashboard');
       } else {
         router.push('/child-dashboard');

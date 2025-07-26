@@ -2,47 +2,38 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  getCurrentUser,
-  getStoredToken,
-  logout,
-  refreshUserData,
-} from '../../lib/auth';
+import { getCurrentUser, logout, refreshUserData } from '../../lib/auth';
 import { UserType, TaskType } from '../../types';
 import TaskModal from '@/app/components/newTaskModal';
 import TaskForm from '@/app/components/task-form';
 import FamilyForm from '@/app/components/family-form';
-import TasksWidget from '@/app/components/tasksWidget';
-import { mockUsers as users, mockTasks } from '../../lib/mockData';
+//import TasksWidget from '@/app/components/tasksWidget';
 import Button from '@/app/components/ui/button';
 
 export default function ParentDashboard() {
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [tasks, setTasks] = useState<TaskType[]>(mockTasks);
+  // const [token, setToken] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [tasks, setTasks] = useState<TaskType[]>([]);
   const [openTaskModal, setOpenTaskModal] = useState(false);
   const [openCreateFamilyModal, setOpenCreateFamilyModal] = useState(false);
-  const [familyMembers, setFamilyMembers] = useState<UserType[]>([]);
+  // const [familyMembers, setFamilyMembers] = useState<UserType[]>([]);
   const [showCreateFamilyButton, setShowCreateFamilyButton] = useState(false);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
 
   const router = useRouter();
 
   useEffect(() => {
     const user = getCurrentUser();
-    const userToken = getStoredToken();
-    if (!user || user.role !== 'parent') {
+    if (!user || user.role !== 'PARENT') {
       router.push('/');
       return;
     }
     setCurrentUser(user);
-    setToken(userToken);
     console.log(user, 'user');
     if (!user.familyId) {
       setShowCreateFamilyButton(true);
     }
-
-    setLoading(false);
   }, [router]);
 
   const handleLogout = () => {
@@ -104,7 +95,7 @@ export default function ParentDashboard() {
           <TaskForm
             onCancel={closeModal}
             currentUser={currentUser}
-      setTasks={setTasks}
+            setTasks={setTasks}
           />
         </TaskModal>
       )}
@@ -112,7 +103,6 @@ export default function ParentDashboard() {
         <TaskModal onClose={closeModal}>
           <FamilyForm
             onCancel={closeModal}
-            usersToAssignTo={users.filter((user) => user.role === 'child')}
             onSubmit={(familyData) => {
               console.log('New family created:', familyData);
               if (familyData.id) {
@@ -124,7 +114,7 @@ export default function ParentDashboard() {
         </TaskModal>
       )}
       {/* Task Widget */}
-      <TasksWidget tasks={tasks} users={users} />
+      {/* <TasksWidget tasks={tasks} users={users} /> */}
     </div>
   );
 }

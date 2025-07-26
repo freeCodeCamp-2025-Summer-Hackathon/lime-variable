@@ -4,11 +4,10 @@ import { useState, FormEvent } from 'react';
 import { validateTaskTitle } from '../lib/auth';
 import { getStoredToken } from '../lib/auth';
 import Button from '../components/ui/button';
-import { UserType, FamilyType } from '../types';
+import { FamilyType } from '../types';
 
 type TaskFormProps = {
   onCancel: () => void;
-  usersToAssignTo: UserType[];
   onSubmit?: (familyData: FamilyType) => void;
 };
 

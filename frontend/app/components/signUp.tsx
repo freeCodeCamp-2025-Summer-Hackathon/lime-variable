@@ -57,7 +57,7 @@ export default function SignUp({ onToggleToLogin }: SignUpProps) {
       const user = await register(name, email, password);
 
       // Redirect based on user role
-      if (user.role === 'parent') {
+      if (user.role === 'PARENT') {
         router.push('/parent-dashboard');
       } else {
         router.push('/child-dashboard');

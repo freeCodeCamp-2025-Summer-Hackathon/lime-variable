@@ -13,14 +13,12 @@ import { TaskType, UserType } from '../types';
 
 type TaskFormProps = {
   onCancel: () => void;
-
   currentUser: UserType;
   setTasks: Dispatch<SetStateAction<TaskType[]>>;
 };
 
 export default function TaskForm({
   onCancel,
-
   currentUser,
   setTasks,
 }: TaskFormProps) {
@@ -32,6 +30,7 @@ export default function TaskForm({
   const [familyMembers, setFamilyMembers] = useState<
     Omit<UserType, 'avatar'>[] | null
   >(null);
+  console.log(familyMembers, 'familyMembers');
   console.log('tasks user', currentUser);
   const today = new Date();
   const tomorrow = new Date(today);
@@ -52,7 +51,8 @@ export default function TaskForm({
         console.error('Failed to fetch family members');
         return;
       }
-      const familyMembersData: Omit<UserType, 'avatar'>[] = await familyMembers.json();
+      const familyMembersData: Omit<UserType, 'avatar'>[] =
+        await familyMembers.json();
       setFamilyMembers(familyMembersData);
     };
     fetchFamilyMembers();
@@ -171,7 +171,7 @@ export default function TaskForm({
         >
           <option value="">Select a child</option>
           {familyMembers?.map((member) => {
-            if (member.role !== 'child') return null;
+            if (member.role !== 'CHILD') return null;
 
             return (
               <option key={member.id} value={member.id}>

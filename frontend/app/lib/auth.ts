@@ -63,10 +63,12 @@ export async function register(
       id: userDetails.id,
       name: userDetails.name || '',
       email: userDetails.email,
-      role: userDetails.role.toLowerCase() as 'parent' | 'child',
+      role: userDetails.role,
       avatar: userDetails.role === 'PARENT' ? '👨‍💼' : '👧',
       points: userDetails.points,
       familyId: userDetails.familyId,
+      createdAt: userDetails.createdAt,
+      updatedAt: userDetails.updatedAt,
     };
 
     if (typeof window !== 'undefined') {
@@ -99,9 +101,11 @@ export async function login(
       id: userDetails.id,
       name: userDetails.name || '',
       email: userDetails.email,
-      role: userDetails.role.toLowerCase() as 'parent' | 'child',
+      role: userDetails.role,
       points: userDetails.points,
       familyId: userDetails.familyId,
+      createdAt: userDetails.createdAt,
+      updatedAt: userDetails.updatedAt,
     };
 
     if (typeof window !== 'undefined') {
@@ -158,10 +162,12 @@ export async function refreshUserData(): Promise<UserType | null> {
       id: userDetails.id,
       name: userDetails.name || '',
       email: userDetails.email,
-      role: userDetails.role.toLowerCase() as 'parent' | 'child',
+      role: userDetails.role,
       avatar: userDetails.role === 'PARENT' ? '👨‍💼' : '👧',
       points: userDetails.points,
       familyId: userDetails.familyId,
+      createdAt: userDetails.createdAt,
+      updatedAt: userDetails.updatedAt,
     };
 
     // Update stored user data
