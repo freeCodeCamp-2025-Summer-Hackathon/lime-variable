@@ -35,7 +35,6 @@ export class CreateChoreDto {
 
   @IsDate({ message: 'Due date must be a valid date' })
   @IsOptional()
-  @MaxLength(100, { message: 'Due date must not exceed 100 characters' })
   @Type(() => Date)
   dueDate?: Date;
 
