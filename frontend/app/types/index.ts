@@ -2,12 +2,12 @@ export interface UserType {
   id: string;
   name: string;
   email: string;
-  role: 'parent' | 'child';
+  role: 'PARENT' | 'CHILD';
   points?: number;
   avatar?: string;
   familyId?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface TaskType {

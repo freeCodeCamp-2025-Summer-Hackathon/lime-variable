@@ -24,7 +24,7 @@ export default function ChildDashboard() {
 
   useEffect(() => {
     const user = getCurrentUser();
-    if (!user || user.role !== 'child') {
+    if (!user || user.role !== 'CHILD') {
       router.push('/');
       return;
     }
