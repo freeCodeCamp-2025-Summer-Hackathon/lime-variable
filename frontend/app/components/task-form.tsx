@@ -68,6 +68,12 @@ export default function TaskForm({
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
+    // Validate task title length first
+    if (taskTitle.trim().length < 5) {
+      setError('Task title must be at least 5 characters long');
+      return;
+    }
+
     // Validate task title
     const titleError = validateTaskTitle(taskTitle);
     if (titleError) {
@@ -143,6 +149,7 @@ export default function TaskForm({
           value={taskTitle}
           onChange={(e) => setTaskTitle(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          minLength={5}
           required
         />
       </div>
