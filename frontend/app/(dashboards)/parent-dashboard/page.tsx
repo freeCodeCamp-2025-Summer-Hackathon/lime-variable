@@ -103,22 +103,8 @@ export default function ParentDashboard() {
         <TaskModal onClose={closeModal}>
           <TaskForm
             onCancel={closeModal}
-            usersToAssignTo={users.filter((user) => user.role === 'child')}
-            onSubmit={(taskData) => {
-              const newTask: TaskType = {
-                id: Date.now().toString(),
-                title: taskData.title,
-                description: taskData.description,
-                assignedTo: taskData.assignedTo,
-                assignedBy: currentUser.id,
-                points: taskData.points,
-                dueDate: taskData.dueDate,
-                status: 'pending',
-                createdAt: new Date().toISOString(),
-              };
-
-              setTasks((prevTasks) => [...prevTasks, newTask]);
-            }}
+            currentUser={currentUser}
+      setTasks={setTasks}
           />
         </TaskModal>
       )}

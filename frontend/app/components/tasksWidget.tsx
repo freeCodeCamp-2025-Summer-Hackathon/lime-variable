@@ -27,7 +27,7 @@ const TasksWidget = ({
 
   const getChildName = (childId: string) => {
     const child = users.find((user) => user.id === childId);
-    return child?.name ?? 'Unknown Child';
+    return child?.name ?? 'Bounty';
   };
 
   const getStatusColor = (status: string) => {

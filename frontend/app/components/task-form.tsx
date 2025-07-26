@@ -1,36 +1,62 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
-import { validateTaskDescription, validateTaskTitle } from '../lib/auth';
-import { UserType } from '../types';
+import {
+  Dispatch,
+  FormEvent,
+  SetStateAction,
+  useEffect,
+  useState,
+} from 'react';
 import Button from '../components/ui/button';
+import { validateTaskDescription, validateTaskTitle } from '../lib/auth';
+import { TaskType, UserType } from '../types';
 
 type TaskFormProps = {
   onCancel: () => void;
-  usersToAssignTo: UserType[];
-  onSubmit?: (taskData: {
-    title: string;
-    description: string;
-    assignedTo: string;
-    points: number;
-    dueDate: string;
-  }) => void;
+
+  currentUser: UserType;
+  setTasks: Dispatch<SetStateAction<TaskType[]>>;
 };
 
 export default function TaskForm({
   onCancel,
-  onSubmit,
-  usersToAssignTo,
+
+  currentUser,
+  setTasks,
 }: TaskFormProps) {
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
   const [assignedTo, setAssignedTo] = useState('');
   const [points, setPoints] = useState(10);
   const [error, setError] = useState('');
-
+  const [familyMembers, setFamilyMembers] = useState<
+    Omit<UserType, 'avatar'>[] | null
+  >(null);
+  console.log('tasks user', currentUser);
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
+  useEffect(() => {
+    const fetchFamilyMembers = async () => {
+      const familyMembers = await fetch(
+        `users/family/${currentUser.familyId}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+          method: 'GET',
+        }
+      );
+      if (!familyMembers.ok) {
+        console.error('Failed to fetch family members');
+        return;
+      }
+      const familyMembersData: Omit<UserType, 'avatar'>[] = await familyMembers.json();
+      setFamilyMembers(familyMembersData);
+    };
+    fetchFamilyMembers();
+  }, [currentUser]);
 
   // Format date to yyyy-mm-dd
   const formatDate = (date: Date) => {
@@ -39,7 +65,7 @@ export default function TaskForm({
 
   const [dueDate, setDueDate] = useState(formatDate(tomorrow));
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     // Validate task title
@@ -55,22 +81,37 @@ export default function TaskForm({
       setError(descriptionError);
       return;
     }
+    const formValues = {
+      title: taskTitle,
+      description: taskDescription,
 
-    // Check if a child is assigned
-    if (!assignedTo) {
-      setError('Please select a child to assign the task to');
-      return;
-    }
-
+      points,
+      dueDate,
+      ...(assignedTo ? { assignedTo } : {}),
+    };
     // Call the onSubmit callback if provided
-    if (onSubmit) {
-      onSubmit({
-        title: taskTitle,
-        description: taskDescription,
-        assignedTo,
-        points,
-        dueDate,
+    try {
+      const task = await fetch('/chores', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(formValues),
       });
+      if (!task.ok) {
+        const errText = await task.text();
+        throw new Error(errText || `Failed with status ${task.status}`);
+      }
+      const newTask: TaskType = await task.json();
+      setTasks((prevTasks) => [
+        ...prevTasks,
+        { ...newTask, dueDate: formatDate(new Date(newTask.dueDate)) },
+      ]);
+    } catch (error) {
+      console.error('Failed to create task:', error);
+      setError('Failed to create task. Please try again.');
+      return;
     }
 
     // Reset form
@@ -127,14 +168,17 @@ export default function TaskForm({
           value={assignedTo}
           onChange={(e) => setAssignedTo(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
         >
           <option value="">Select a child</option>
-          {usersToAssignTo.map((child) => (
-            <option key={child.id} value={child.id}>
-              {child.name}
-            </option>
-          ))}
+          {familyMembers?.map((member) => {
+            if (member.role !== 'child') return null;
+
+            return (
+              <option key={member.id} value={member.id}>
+                {member.name}
+              </option>
+            );
+          })}
         </select>
       </div>
 
@@ -166,7 +210,7 @@ export default function TaskForm({
       </div>
 
       <div className="flex space-x-3 pt-4">
-        <Button type='submit'>+ Create Task</Button>
+        <Button type="submit">+ Create Task</Button>
         <Button variant="secondary" onClick={onCancel}>
           Cancel
         </Button>
