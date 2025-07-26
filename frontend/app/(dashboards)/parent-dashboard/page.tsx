@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getCurrentUser, logout } from '../../lib/auth';
+import { getCurrentUser, getStoredToken, logout } from '../../lib/auth';
 import { UserType, TaskType } from '../../types';
 import TaskModal from '@/app/components/newTaskModal';
 import TaskForm from '@/app/components/task-form';
@@ -12,18 +12,30 @@ import Button from '@/app/components/ui/button';
 
 export default function ParentDashboard() {
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [tasks, setTasks] = useState<TaskType[]>(mockTasks);
-  const [openModal, setOpenModal] = useState(false);
+  const [openTaskModal, setOpenTaskModal] = useState(false);
+  const [openCreateFamilyModal, setOpenCreateFamilyModal] = useState(false);
+  const [familyMembers, setFamilyMembers] = useState<UserType[]>([]);
+  const [showCreateFamilyButton, setShowCreateFamilyButton] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const router = useRouter();
 
   useEffect(() => {
     const user = getCurrentUser();
+    const userToken = getStoredToken();
     if (!user || user.role !== 'parent') {
       router.push('/');
       return;
     }
     setCurrentUser(user);
+    setToken(userToken);
+    if (!user.familyId) {
+      setShowCreateFamilyButton(true);
+    }
+
+    setLoading(false);
   }, [router]);
 
   const handleLogout = () => {
@@ -34,7 +46,7 @@ export default function ParentDashboard() {
   if (!currentUser) return <div>Loading...</div>;
 
   function closeModal() {
-    setOpenModal(false);
+    setOpenTaskModal(false);
   }
 
   return (
@@ -48,13 +60,23 @@ export default function ParentDashboard() {
               <h1 className="text-xl font-semibold text-gray-800">
                 Parent Dashboard
               </h1>
-              <p className="text-gray-600">Welcome back, {currentUser.name}!</p>
+              <p className="text-gray-600">
+                <span>Welcome back</span>{' '}
+                <span>{currentUser.name ? `,${currentUser.name}` : ''}!</span>
+              </p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <Button className="flex-1" onClick={() => setOpenModal(true)}>
-              + Create Task
-            </Button>
+            {!showCreateFamilyButton && (
+              <Button className="flex-1" onClick={() => setOpenTaskModal(true)}>
+                + Create Task
+              </Button>
+            )}
+            {showCreateFamilyButton && (
+              <Button className="flex-1" onClick={() => setOpenTaskModal(true)}>
+                + Create Your Family
+              </Button>
+            )}
             <Button
               onClick={handleLogout}
               className="text-gray-600 hover:text-gray-800 transition-colors cursor-pointer"
@@ -66,7 +88,7 @@ export default function ParentDashboard() {
         </div>
       </div>
       {/* Modal */}
-      {openModal && (
+      {openTaskModal && (
         <TaskModal onClose={closeModal}>
           <TaskForm
             onCancel={closeModal}

@@ -56,7 +56,6 @@ export async function register(
       localStorage.setItem(TOKEN_KEY, response.access_token);
     }
 
-    // Get user details to determine role
     const userDetails = await getUserMe(response.access_token);
 
     const user: UserType = {

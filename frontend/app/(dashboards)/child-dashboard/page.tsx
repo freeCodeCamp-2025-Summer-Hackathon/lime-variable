@@ -282,7 +282,10 @@ export default function ChildDashboard() {
             <span className="text-2xl">{currentUser.avatar}</span>
             <div>
               <h1 className="text-xl font-semibold text-gray-800">
-                Hey {currentUser.name}! 👋
+                <span>Hey</span>{' '}
+                <span>
+                  {currentUser.name ? `,${currentUser.name}` : '! 👋'}
+                </span>
               </h1>
               <p className="text-gray-600">Ready to earn some points?</p>
             </div>
