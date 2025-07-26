@@ -1,0 +1,7 @@
+pull_request_templates:
+  - name: Backend PR
+    filename: backend_pr.md
+    description: Use this template for backend-related pull requests.
+  - name: Frontend PR
+    filename: frontend_pr.md
+    description: Use this template for frontend-related pull requests.
