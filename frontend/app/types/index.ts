@@ -5,6 +5,7 @@ export interface UserType {
   role: 'parent' | 'child';
   points?: number;
   avatar?: string;
+  familyId?: string;
 }
 
 export interface TaskType {

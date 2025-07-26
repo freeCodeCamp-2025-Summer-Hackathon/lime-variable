@@ -6,11 +6,16 @@ import { login } from '../lib/auth';
 import { mockUsers } from '../lib/mockData';
 import Button from '../components/ui/button';
 
-export default function Login() {
+interface LoginProps {
+  onToggleToSignUp?: () => void;
+}
+
+export default function Login({ onToggleToSignUp }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showQuickLogin, setShowQuickLogin] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,18 +24,14 @@ export default function Login() {
     setError('');
 
     try {
-      const user = login(email, password);
-      if (user) {
-        if (user.role === 'parent') {
-          router.push('/parent-dashboard');
-        } else {
-          router.push('/child-dashboard');
-        }
+      const user = await login(email, password);
+      if (user.role === 'parent') {
+        router.push('/parent-dashboard');
       } else {
-        setError('Invalid email or password');
+        router.push('/child-dashboard');
       }
     } catch (err) {
-      setError(`Login failed, here is the error: ${(err as Error).message}`);
+      setError((err as Error).message);
     } finally {
       setLoading(false);
     }
@@ -39,6 +40,25 @@ export default function Login() {
   const quickLogin = (userEmail: string) => {
     setEmail(userEmail);
     setPassword('password123');
+    setShowQuickLogin(false);
+  };
+
+  const handleQuickSubmit = async (userEmail: string) => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const user = await login(userEmail, 'password123');
+      if (user.role === 'parent') {
+        router.push('/parent-dashboard');
+      } else {
+        router.push('/child-dashboard');
+      }
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -46,6 +66,7 @@ export default function Login() {
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Sign in</h1>
+          <p className="text-gray-600">Welcome back!</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -92,27 +113,67 @@ export default function Login() {
           </Button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-gray-200">
-          <p className="text-sm text-gray-600 text-center mb-4">Quick Login (Demo)</p>
-          <div className="space-y-2">
-            {mockUsers.map((user) => (
-              <button
-                key={user.id}
-                onClick={() => quickLogin(user.email)}
-                className="w-full text-left px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors flex items-center space-x-3 cursor-pointer"
-              >
-                <span className="text-2xl">{user.avatar}</span>
-                <div>
-                  <div className="font-medium text-gray-800">{user.name}</div>
-                  <div className="text-sm text-gray-600 capitalize">{user.role}</div>
-                </div>
-              </button>
-            ))}
-          </div>
-          <p className="text-xs text-gray-500 text-center mt-4">
-            Password: password123
+        <div className="mt-6 text-center">
+          <p className="text-gray-600">
+            Don't have an account?{' '}
+            <button
+              onClick={onToggleToSignUp}
+              className="text-blue-600 hover:text-blue-700 font-medium"
+            >
+              Sign up
+            </button>
           </p>
         </div>
+
+        {showQuickLogin && (
+          <>
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm text-gray-600">Quick Login (Demo)</p>
+                <button
+                  onClick={() => setShowQuickLogin(false)}
+                  className="text-xs text-gray-400 hover:text-gray-600"
+                >
+                  Hide
+                </button>
+              </div>
+              <div className="space-y-2">
+                {mockUsers.map((user) => (
+                  <button
+                    key={user.id}
+                    onClick={() => handleQuickSubmit(user.email)}
+                    disabled={loading}
+                    className="w-full text-left px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors flex items-center space-x-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="text-2xl">{user.avatar}</span>
+                    <div>
+                      <div className="font-medium text-gray-800">
+                        {user.name}
+                      </div>
+                      <div className="text-sm text-gray-600 capitalize">
+                        {user.role}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-gray-500 text-center mt-4">
+                Password: password123
+              </p>
+            </div>
+          </>
+        )}
+
+        {!showQuickLogin && (
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => setShowQuickLogin(true)}
+              className="text-sm text-blue-600 hover:text-blue-700"
+            >
+              Show demo quick login
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
