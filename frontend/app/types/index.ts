@@ -30,3 +30,4 @@ export interface RewardType {
   cost: number;
   available: boolean;
 }
+

@@ -2,10 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getCurrentUser, getStoredToken, logout } from '../../lib/auth';
+import {
+  getCurrentUser,
+  getStoredToken,
+  logout,
+  refreshUserData,
+} from '../../lib/auth';
 import { UserType, TaskType } from '../../types';
 import TaskModal from '@/app/components/newTaskModal';
 import TaskForm from '@/app/components/task-form';
+import FamilyForm from '@/app/components/family-form';
 import TasksWidget from '@/app/components/tasksWidget';
 import { mockUsers as users, mockTasks } from '../../lib/mockData';
 import Button from '@/app/components/ui/button';
@@ -31,6 +37,7 @@ export default function ParentDashboard() {
     }
     setCurrentUser(user);
     setToken(userToken);
+    console.log(user, 'user');
     if (!user.familyId) {
       setShowCreateFamilyButton(true);
     }
@@ -47,6 +54,7 @@ export default function ParentDashboard() {
 
   function closeModal() {
     setOpenTaskModal(false);
+    setOpenCreateFamilyModal(false);
   }
 
   return (
@@ -73,7 +81,10 @@ export default function ParentDashboard() {
               </Button>
             )}
             {showCreateFamilyButton && (
-              <Button className="flex-1" onClick={() => setOpenTaskModal(true)}>
+              <Button
+                className="flex-1"
+                onClick={() => setOpenCreateFamilyModal(true)}
+              >
                 + Create Your Family
               </Button>
             )}
@@ -107,6 +118,26 @@ export default function ParentDashboard() {
               };
 
               setTasks((prevTasks) => [...prevTasks, newTask]);
+            }}
+          />
+        </TaskModal>
+      )}
+      {openCreateFamilyModal && (
+        <TaskModal onClose={closeModal}>
+          <FamilyForm
+            onCancel={closeModal}
+            usersToAssignTo={users.filter((user) => user.role === 'child')}
+            onSubmit={(familyData) => {
+              // `familyData` will be the response from /families API
+              console.log('New family created:', familyData);
+              if (familyData.id) {
+                refreshUserData();
+              }
+              // Example: Update state if needed
+              // setFamilies((prevFamilies) => [...prevFamilies, familyData]);
+
+              // Optionally refresh user data (to get updated familyId)
+              //
             }}
           />
         </TaskModal>
