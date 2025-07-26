@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { login } from '../lib/auth';
-import { mockUsers } from '../lib/mockData';
 import Button from '../components/ui/button';
 
 interface LoginProps {
@@ -15,7 +14,7 @@ export default function Login({ onToggleToSignUp }: LoginProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showQuickLogin, setShowQuickLogin] = useState(false);
+  //const [showQuickLogin, setShowQuickLogin] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,30 +24,6 @@ export default function Login({ onToggleToSignUp }: LoginProps) {
 
     try {
       const user = await login(email, password);
-      if (user.role === 'parent') {
-        router.push('/parent-dashboard');
-      } else {
-        router.push('/child-dashboard');
-      }
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const quickLogin = (userEmail: string) => {
-    setEmail(userEmail);
-    setPassword('password123');
-    setShowQuickLogin(false);
-  };
-
-  const handleQuickSubmit = async (userEmail: string) => {
-    setLoading(true);
-    setError('');
-
-    try {
-      const user = await login(userEmail, 'password123');
       if (user.role === 'parent') {
         router.push('/parent-dashboard');
       } else {
@@ -115,7 +90,7 @@ export default function Login({ onToggleToSignUp }: LoginProps) {
 
         <div className="mt-6 text-center">
           <p className="text-gray-600">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <button
               onClick={onToggleToSignUp}
               className="text-blue-600 hover:text-blue-700 font-medium"
@@ -124,7 +99,7 @@ export default function Login({ onToggleToSignUp }: LoginProps) {
             </button>
           </p>
         </div>
-
+        {/* 
         {showQuickLogin && (
           <>
             <div className="mt-8 pt-6 border-t border-gray-200">
@@ -173,7 +148,7 @@ export default function Login({ onToggleToSignUp }: LoginProps) {
               Show demo quick login
             </button>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );
