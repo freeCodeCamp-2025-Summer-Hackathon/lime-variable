@@ -128,16 +128,11 @@ export default function ParentDashboard() {
             onCancel={closeModal}
             usersToAssignTo={users.filter((user) => user.role === 'child')}
             onSubmit={(familyData) => {
-              // `familyData` will be the response from /families API
               console.log('New family created:', familyData);
               if (familyData.id) {
                 refreshUserData();
+                setShowCreateFamilyButton(false);
               }
-              // Example: Update state if needed
-              // setFamilies((prevFamilies) => [...prevFamilies, familyData]);
-
-              // Optionally refresh user data (to get updated familyId)
-              //
             }}
           />
         </TaskModal>

@@ -2,14 +2,14 @@
 
 import { useState, FormEvent } from 'react';
 import { validateTaskTitle } from '../lib/auth';
-import { getStoredToken, refreshUserData } from '../lib/auth';
+import { getStoredToken } from '../lib/auth';
 import Button from '../components/ui/button';
-import { UserType } from '../types';
+import { UserType, FamilyType } from '../types';
 
 type TaskFormProps = {
   onCancel: () => void;
   usersToAssignTo: UserType[];
-  onSubmit?: (familyData: { name: string }) => void;
+  onSubmit?: (familyData: FamilyType) => void;
 };
 
 export default function FamilyForm({ onCancel, onSubmit }: TaskFormProps) {
@@ -43,7 +43,6 @@ export default function FamilyForm({ onCancel, onSubmit }: TaskFormProps) {
       const data = await res.json();
       if (onSubmit) onSubmit(data);
 
-      // Reset form
       setTaskTitle('');
       setError('');
       onCancel();
