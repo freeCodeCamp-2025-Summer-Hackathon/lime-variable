@@ -2,40 +2,59 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getCurrentUser, logout } from '../../lib/auth';
+import {
+  getCurrentUser,
+  getStoredToken,
+  logout,
+  refreshUserData,
+} from '../../lib/auth';
 import { UserType, TaskType } from '../../types';
 import TaskModal from '@/app/components/newTaskModal';
 import TaskForm from '@/app/components/task-form';
+import FamilyForm from '@/app/components/family-form';
 import TasksWidget from '@/app/components/tasksWidget';
 import { mockUsers as users, mockTasks } from '../../lib/mockData';
 import Button from '@/app/components/ui/button';
 
 export default function ParentDashboard() {
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [tasks, setTasks] = useState<TaskType[]>(mockTasks);
-  const [openModal, setOpenModal] = useState(false);
+  const [openTaskModal, setOpenTaskModal] = useState(false);
+  const [openCreateFamilyModal, setOpenCreateFamilyModal] = useState(false);
+  const [familyMembers, setFamilyMembers] = useState<UserType[]>([]);
+  const [showCreateFamilyButton, setShowCreateFamilyButton] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const router = useRouter();
 
-  // TODO: Uncomment Later
-  // useEffect(() => {
-  //   const user = getCurrentUser();
-  //   if (!user || user.role !== 'parent') {
-  //     router.push('/');
-  //     return;
-  //   }
-  //   setCurrentUser(user);
-  // }, [router]);
+  useEffect(() => {
+    const user = getCurrentUser();
+    const userToken = getStoredToken();
+    if (!user || user.role !== 'parent') {
+      router.push('/');
+      return;
+    }
+    setCurrentUser(user);
+    setToken(userToken);
+    console.log(user, 'user');
+    if (!user.familyId) {
+      setShowCreateFamilyButton(true);
+    }
+
+    setLoading(false);
+  }, [router]);
 
   const handleLogout = () => {
     logout();
     router.push('/');
   };
-  // TODO: Uncomment Later
-  // if (!currentUser) return <div>Loading...</div>;
+
+  if (!currentUser) return <div>Loading...</div>;
 
   function closeModal() {
-    setOpenModal(false);
+    setOpenTaskModal(false);
+    setOpenCreateFamilyModal(false);
   }
 
   return (
@@ -44,20 +63,31 @@ export default function ParentDashboard() {
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <span className="text-2xl">{currentUser?.avatar}</span>
+            <span className="text-2xl">{currentUser.avatar}</span>
             <div>
               <h1 className="text-xl font-semibold text-gray-800">
                 Parent Dashboard
               </h1>
               <p className="text-gray-600">
-                Welcome back, {currentUser?.name}!
+                <span>Welcome back</span>{' '}
+                <span>{currentUser.name ? `,${currentUser.name}` : ''}!</span>
               </p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <Button className="flex-1" onClick={() => setOpenModal(true)}>
-              + Create Task
-            </Button>
+            {!showCreateFamilyButton && (
+              <Button className="flex-1" onClick={() => setOpenTaskModal(true)}>
+                + Create Task
+              </Button>
+            )}
+            {showCreateFamilyButton && (
+              <Button
+                className="flex-1"
+                onClick={() => setOpenCreateFamilyModal(true)}
+              >
+                + Create Your Family
+              </Button>
+            )}
             <Button
               onClick={handleLogout}
               className="text-gray-600 hover:text-gray-800 transition-colors cursor-pointer"
@@ -69,7 +99,7 @@ export default function ParentDashboard() {
         </div>
       </div>
       {/* Modal */}
-      {openModal && (
+      {openTaskModal && (
         <TaskModal onClose={closeModal}>
           <TaskForm
             onCancel={closeModal}
@@ -80,7 +110,7 @@ export default function ParentDashboard() {
                 title: taskData.title,
                 description: taskData.description,
                 assignedTo: taskData.assignedTo,
-                assignedBy: currentUser?.id,
+                assignedBy: currentUser.id,
                 points: taskData.points,
                 dueDate: taskData.dueDate,
                 status: 'pending',
@@ -88,6 +118,21 @@ export default function ParentDashboard() {
               };
 
               setTasks((prevTasks) => [...prevTasks, newTask]);
+            }}
+          />
+        </TaskModal>
+      )}
+      {openCreateFamilyModal && (
+        <TaskModal onClose={closeModal}>
+          <FamilyForm
+            onCancel={closeModal}
+            usersToAssignTo={users.filter((user) => user.role === 'child')}
+            onSubmit={(familyData) => {
+              console.log('New family created:', familyData);
+              if (familyData.id) {
+                refreshUserData();
+                setShowCreateFamilyButton(false);
+              }
             }}
           />
         </TaskModal>

@@ -1,69 +1,143 @@
 import { UserType } from '../types';
 
-const STORAGE_KEY = 'chore_tracker_user';
+const USER_KEY = 'user';
+const TOKEN_KEY = 'token';
 
-export async function handleLogin(
-  email: string,
-  password: string
-): Promise<JSON | null> {
-  const loginUrl: string = 'auth/login';
-  const request: Response = await fetch(loginUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ email: email, password: password }),
-  });
-  if (!request.ok) {
-    return null;
-  }
-
-  const response: Promise<JSON> = await request.json();
-
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(response));
-  }
-  return response;
+interface LoginResponse {
+  access_token: string;
 }
 
-export async function handleSignUp(
+interface RegisterResponse {
+  id: string;
+  name: string | null;
+  email: string;
+  access_token: string;
+}
+
+interface UserMeResponse {
+  id: string;
+  name: string | null;
+  email: string;
+  role: 'PARENT' | 'CHILD';
+  points: number;
+  createdAt: string;
+  updatedAt: string;
+  familyId: string;
+}
+
+async function apiCall(url: string, options: RequestInit = {}) {
+  const response = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    ...options,
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(error || `HTTP error! status: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function register(
   name: string,
   email: string,
   password: string
-): Promise<JSON | null> {
-  const signUpUrl: string = 'auth/register-user';
+): Promise<UserType> {
+  try {
+    const response: RegisterResponse = await apiCall('auth/register-user', {
+      method: 'POST',
+      body: JSON.stringify({ name, email, password }),
+    });
 
-  const request: Response = await fetch(signUpUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      name: name,
-      email: email,
-      password: password,
-    }),
-  });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(TOKEN_KEY, response.access_token);
+    }
 
-  if (!request.ok) {
-    return null;
+    const userDetails = await getUserMe(response.access_token);
+
+    const user: UserType = {
+      id: userDetails.id,
+      name: userDetails.name || '',
+      email: userDetails.email,
+      role: userDetails.role.toLowerCase() as 'parent' | 'child',
+      avatar: userDetails.role === 'PARENT' ? '👨‍💼' : '👧',
+      points: userDetails.points,
+      familyId: userDetails.familyId,
+    };
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+    }
+
+    return user;
+  } catch (error) {
+    throw new Error(`Registration failed: ${(error as Error).message}`);
   }
+}
 
-  const response: Promise<JSON> = await request.json();
+export async function login(
+  email: string,
+  password: string
+): Promise<UserType> {
+  try {
+    const response: LoginResponse = await apiCall('auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
 
-  return response;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(TOKEN_KEY, response.access_token);
+    }
+
+    const userDetails = await getUserMe(response.access_token);
+
+    const user: UserType = {
+      id: userDetails.id,
+      name: userDetails.name || '',
+      email: userDetails.email,
+      role: userDetails.role.toLowerCase() as 'parent' | 'child',
+      points: userDetails.points,
+      familyId: userDetails.familyId,
+    };
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+    }
+
+    return user;
+  } catch (error) {
+    throw new Error(`Login failed: ${(error as Error).message}`);
+  }
+}
+
+async function getUserMe(token: string): Promise<UserMeResponse> {
+  return apiCall('users/me', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function getStoredToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(TOKEN_KEY);
 }
 
 export function logout(): void {
   if (typeof window !== 'undefined') {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(TOKEN_KEY);
   }
 }
 
 export function getCurrentUser(): UserType | null {
   if (typeof window === 'undefined') return null;
 
-  const userStr = localStorage.getItem(STORAGE_KEY);
+  const userStr = localStorage.getItem(USER_KEY);
   if (!userStr) return null;
 
   try {
@@ -73,14 +147,61 @@ export function getCurrentUser(): UserType | null {
   }
 }
 
-export function validateTaskTitle(taskTitle: string) {
+export async function refreshUserData(): Promise<UserType | null> {
+  const token = getStoredToken();
+  if (!token) return null;
+
+  try {
+    const userDetails = await getUserMe(token);
+
+    const user: UserType = {
+      id: userDetails.id,
+      name: userDetails.name || '',
+      email: userDetails.email,
+      role: userDetails.role.toLowerCase() as 'parent' | 'child',
+      avatar: userDetails.role === 'PARENT' ? '👨‍💼' : '👧',
+      points: userDetails.points,
+      familyId: userDetails.familyId,
+    };
+
+    // Update stored user data
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+    }
+
+    return user;
+  } catch (error) {
+    logout();
+    throw new Error(`Registration failed: ${(error as Error).message}`);
+  }
+}
+
+export function validateTaskTitle(taskTitle: string): string {
   if (taskTitle.length > 100)
     return 'Task Title must be less than or equal to 100 characters.';
   return '';
 }
 
-export function validateTaskDescription(taskDescription: string) {
+export function validateTaskDescription(taskDescription: string): string {
   if (taskDescription.length > 500)
     return 'Task Description must be less than or equal to 500 characters.';
+  return '';
+}
+
+export function validateName(name: string): string {
+  const nameRegex = /^[\p{L}\p{M}\s'-.]+$/u;
+  if (!nameRegex.test(name)) return 'Please enter a valid name';
+  return '';
+}
+
+export function validateEmail(email: string): string {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) return 'Please enter a valid email address.';
+  return '';
+}
+
+export function validatePassword(password: string): string {
+  if (password.length < 8)
+    return 'Password must be at least 8 characters long.';
   return '';
 }

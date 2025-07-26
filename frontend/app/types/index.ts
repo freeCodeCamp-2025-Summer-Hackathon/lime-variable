@@ -5,6 +5,9 @@ export interface UserType {
   role: 'parent' | 'child';
   points?: number;
   avatar?: string;
+  familyId?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface TaskType {
@@ -29,3 +32,12 @@ export interface RewardType {
   cost: number;
   available: boolean;
 }
+
+export type FamilyType = {
+  id: string;
+  name: string;
+  code: string;
+  createdAt: string;
+  updatedAt: string;
+  members: UserType[];
+};
