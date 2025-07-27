@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import { getCurrentUser, getStoredToken } from '../lib/auth';
 import Button from '@/app/components/ui/button';
+import { UserType } from '../types';
 
 interface AddMemberFormProps {
   onCancel: () => void;
-  onSubmit: (memberData: any) => void;
+  onSubmit: (memberData: UserType) => void;
 }
 
 export default function AddMemberForm({
