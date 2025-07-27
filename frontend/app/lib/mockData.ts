@@ -75,7 +75,7 @@ export const mockTasks: TaskType[] = [
     assignedTo: '3',
     assignedBy: '2',
     points: 12,
-    status: 'completed',
+    status: 'approved',
     dueDate: '2025-07-07',
     createdAt: '2025-07-05',
     completedAt: '2025-07-07',

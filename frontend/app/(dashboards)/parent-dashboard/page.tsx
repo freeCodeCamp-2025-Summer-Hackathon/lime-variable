@@ -183,10 +183,6 @@ export default function ParentDashboard() {
             onCancel={closeModal}
             currentUser={currentUser}
             setTasks={setTasks}
-            onTaskCreated={() => {
-              closeModal();
-              fetchChores(); // Refresh tasks after creation
-            }}
           />
         </TaskModal>
       )}
