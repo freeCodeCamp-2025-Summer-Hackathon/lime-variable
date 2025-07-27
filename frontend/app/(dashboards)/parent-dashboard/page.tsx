@@ -54,7 +54,12 @@ export default function ParentDashboard() {
       }
 
       const chores = await response.json();
-      setTasks(chores);
+      setTasks(
+        chores.map((chore: TaskType) => ({
+          ...chore,
+          status: chore.status.toLowerCase(),
+        }))
+      );
     } catch (err) {
       setTasksError(
         err instanceof Error ? err.message : 'Failed to fetch chores'

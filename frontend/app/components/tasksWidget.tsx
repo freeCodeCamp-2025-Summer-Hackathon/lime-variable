@@ -47,7 +47,7 @@ const TasksWidget = ({
         return 'bg-blue-100 text-blue-800';
       case 'submitted':
         return 'bg-purple-100 text-purple-800';
-      case 'completed':
+      case 'approved':
         return 'bg-green-100 text-green-800';
       case 'rejected':
         return 'bg-red-100 text-red-800';
@@ -64,7 +64,7 @@ const TasksWidget = ({
         return <Loader2 className="w-4 h-4" />;
       case 'submitted':
         return <Send className="w-4 h-4" />;
-      case 'completed':
+      case 'approved':
         return <CheckCircle className="w-4 h-4" />;
       case 'rejected':
         return <XCircle className="w-4 h-4" />;
@@ -76,40 +76,68 @@ const TasksWidget = ({
   const handleApprove = async (taskId: string) => {
     try {
       const token = getStoredToken();
-      const response = await fetch(`/chores/${taskId}/approve`, {
+
+      if (!token) {
+        throw new Error('No access token found');
+      }
+
+      const response = await fetch(`/chores/${taskId}/approval`, {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          status: 'APPROVED',
+        }),
       });
 
-      if (response.ok && onTaskStatusUpdate) {
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to approve task');
+      }
+
+      if (onTaskStatusUpdate) {
         // Refresh tasks from parent instead of local state update
         onTaskStatusUpdate();
       }
     } catch (err) {
       console.error('Error approving task:', err);
+      // You might want to show a toast notification here
     }
   };
 
   const handleReject = async (taskId: string) => {
     try {
       const token = getStoredToken();
-      const response = await fetch(`/chores/${taskId}/reject`, {
+
+      if (!token) {
+        throw new Error('No access token found');
+      }
+
+      const response = await fetch(`/chores/${taskId}/approval`, {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          status: 'REJECTED',
+        }),
       });
 
-      if (response.ok && onTaskStatusUpdate) {
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to reject task');
+      }
+
+      if (onTaskStatusUpdate) {
         // Refresh tasks from parent instead of local state update
         onTaskStatusUpdate();
       }
     } catch (err) {
       console.error('Error rejecting task:', err);
+      // You might want to show a toast notification here
     }
   };
 
@@ -193,9 +221,9 @@ const TasksWidget = ({
                   count: tasks.filter((t) => t.status === 'submitted').length,
                 },
                 {
-                  key: 'completed',
-                  label: 'Completed',
-                  count: tasks.filter((t) => t.status === 'completed').length,
+                  key: 'approved',
+                  label: 'approved',
+                  count: tasks.filter((t) => t.status === 'approved').length,
                 },
                 {
                   key: 'rejected',
