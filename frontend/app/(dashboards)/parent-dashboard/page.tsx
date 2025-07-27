@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getCurrentUser, logout, refreshUserData } from '../../lib/auth';
+import {
+  getCurrentUser,
+  logout,
+  refreshUserData,
+  getStoredToken,
+} from '../../lib/auth';
 import { UserType, TaskType } from '../../types';
 import TaskModal from '@/app/components/newTaskModal';
 import TaskForm from '@/app/components/task-form';
@@ -35,8 +40,32 @@ export default function ParentDashboard() {
     console.log(user, 'user');
     if (!user.familyId) {
       setShowCreateFamilyButton(true);
+    } else {
+      // Fetch family members when family exists
+      fetchFamilyMembers();
     }
   }, [router]);
+
+  const fetchFamilyMembers = async () => {
+    try {
+      const user = getCurrentUser();
+      const token = getStoredToken();
+      if (!token || !user?.familyId) return;
+
+      const response = await fetch(`/users/family/${user.familyId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (response.ok) {
+        const members = await response.json();
+        setFamilyMembers(members);
+      }
+    } catch (error) {
+      console.error('Error fetching family members:', error);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -135,7 +164,8 @@ export default function ParentDashboard() {
             onSubmit={(memberData) => {
               console.log('New member added:', memberData);
               closeModal();
-              // Optionally refresh any family member data here
+              // Refresh family members list
+              fetchFamilyMembers();
             }}
           />
         </TaskModal>

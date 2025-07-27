@@ -65,9 +65,9 @@ const TasksWidget = ({
       : tasks.filter((task) => task.status === activeTab);
   const submittedTasks = tasks.filter((task) => task.status === 'submitted');
 
-  const getMemberName = (childId: string) => {
-    const member = users.find((user) => user.id === childId);
-    return member?.name ?? 'Unknown User';
+  const getUserName = (userId: string) => {
+    const user = users.find((user) => user.id === userId);
+    return user?.name ?? 'Unknown User';
   };
 
   const getStatusColor = (status: string) => {
@@ -88,7 +88,7 @@ const TasksWidget = ({
   };
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'pending':
         return <Clock className="w-4 h-4" />;
       case 'in_progress':
@@ -202,9 +202,9 @@ const TasksWidget = ({
               </div>
               <p className="text-sm text-purple-600">
                 {submittedTasks.length} chore
-                {submittedTasks.length !== 1 ? 's' : ''} submitted by your
-                children need{submittedTasks.length === 1 ? 's' : ''} approval
-                or feedback.
+                {submittedTasks.length !== 1 ? 's' : ''} submitted by family
+                members need{submittedTasks.length === 1 ? 's' : ''} approval or
+                feedback.
               </p>
             </div>
           )}
@@ -329,7 +329,7 @@ const TasksWidget = ({
                         </div>
                       </td>
                       <td className="py-3 px-4 text-gray-600">
-                        {getChildName(task.assignedTo)}
+                        {getUserName(task.assignedTo)}
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-1">
