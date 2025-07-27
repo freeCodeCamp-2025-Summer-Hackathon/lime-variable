@@ -27,6 +27,7 @@ export default function TaskForm({
   const [assignedTo, setAssignedTo] = useState('');
   const [points, setPoints] = useState(10);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const [familyMembers, setFamilyMembers] = useState<
     Omit<UserType, 'avatar'>[] | null
   >(null);
@@ -120,16 +121,20 @@ export default function TaskForm({
       return;
     }
 
-    // Reset form
-    setTaskTitle('');
-    setTaskDescription('');
-    setAssignedTo('');
-    setPoints(10);
-    setDueDate(formatDate(tomorrow));
-    setError('');
+    setSuccess(true);
 
-    // Close the modal
-    onCancel();
+    setTimeout(() => {
+      // Reset form
+      setTaskTitle('');
+      setTaskDescription('');
+      setAssignedTo('');
+      setPoints(10);
+      setDueDate(formatDate(tomorrow));
+      setError('');
+
+      // Close the modal
+      onCancel();
+    }, 800);
   }
 
   return (
@@ -217,7 +222,13 @@ export default function TaskForm({
       </div>
 
       <div className="flex space-x-3 pt-4">
-        <Button type="submit">+ Create Task</Button>
+        <Button
+          disabled={success}
+          variant={success ? 'success' : 'primary'}
+          type="submit"
+        >
+          {success ? 'Task Created Successfully' : '+ Create Task'}
+        </Button>
         <Button variant="secondary" onClick={onCancel}>
           Cancel
         </Button>
