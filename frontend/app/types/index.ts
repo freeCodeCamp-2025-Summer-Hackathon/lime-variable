@@ -17,7 +17,7 @@ export interface TaskType {
   assignedTo: string;
   assignedBy: string;
   points: number;
-  status: 'pending' | 'in_progress' | 'submitted' | 'completed' | 'rejected';
+  status: 'pending' | 'in_progress' | 'submitted' | 'approved' | 'rejected';
   dueDate: string;
   createdAt: string;
   completedAt?: string;
