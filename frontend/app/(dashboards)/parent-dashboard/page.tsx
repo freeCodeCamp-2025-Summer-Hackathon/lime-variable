@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   getCurrentUser,
@@ -18,15 +18,16 @@ import Button from '@/app/components/ui/button';
 
 export default function ParentDashboard() {
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
-  // const [token, setToken] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [tasks, setTasks] = useState<TaskType[]>([]);
   const [openTaskModal, setOpenTaskModal] = useState(false);
   const [openCreateFamilyModal, setOpenCreateFamilyModal] = useState(false);
   const [openAddMemberModal, setOpenAddMemberModal] = useState(false);
   const [familyMembers, setFamilyMembers] = useState<UserType[]>([]);
   const [showCreateFamilyButton, setShowCreateFamilyButton] = useState(false);
-  // const [loading, setLoading] = useState(true);
+
+  // Create a ref to hold the refresh function from TasksWidget
+  const refreshTasksRef = useRef<(() => void) | null>(null);
+
   console.log(tasks, 'tasks');
   const router = useRouter();
 
@@ -70,6 +71,13 @@ export default function ParentDashboard() {
   const handleLogout = () => {
     logout();
     router.push('/');
+  };
+
+  // Function to refresh tasks - will be called after task creation
+  const refreshTasks = () => {
+    if (refreshTasksRef.current) {
+      refreshTasksRef.current();
+    }
   };
 
   if (!currentUser) return <div>Loading...</div>;
@@ -133,6 +141,7 @@ export default function ParentDashboard() {
           </div>
         </div>
       </div>
+
       {/* Modals */}
       {openTaskModal && (
         <TaskModal onClose={closeModal}>
@@ -140,6 +149,10 @@ export default function ParentDashboard() {
             onCancel={closeModal}
             currentUser={currentUser}
             setTasks={setTasks}
+            onTaskCreated={() => {
+              closeModal();
+              refreshTasks(); // Refresh tasks after creation
+            }}
           />
         </TaskModal>
       )}
@@ -170,9 +183,16 @@ export default function ParentDashboard() {
           />
         </TaskModal>
       )}
+
       {/* Tasks Widget */}
       {!showCreateFamilyButton && (
-        <TasksWidget tasks={tasks} users={familyMembers} />
+        <TasksWidget
+          tasks={tasks}
+          users={familyMembers}
+          onRefreshTasks={(refreshFn) => {
+            refreshTasksRef.current = refreshFn;
+          }}
+        />
       )}
     </div>
   );

@@ -14,50 +14,58 @@ import {
 const TasksWidget = ({
   tasks: initialTasks,
   users,
+  onRefreshTasks,
 }: {
   tasks: TaskType[];
   users: UserType[];
+  onRefreshTasks?: (refreshFn: () => void) => void;
 }) => {
   const [activeTab, setActiveTab] = useState('all');
   const [tasks, setTasks] = useState<TaskType[]>(initialTasks);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   console.log(tasks, 'tasks');
+
   // Fetch chores from the API
-  useEffect(() => {
-    const fetchChores = async () => {
-      try {
-        setLoading(true);
-        const token = getStoredToken();
+  const fetchChores = async () => {
+    try {
+      setLoading(true);
+      const token = getStoredToken();
 
-        if (!token) {
-          throw new Error('No access token found');
-        }
-
-        const response = await fetch('/chores', {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch chores');
-        }
-
-        const chores = await response.json();
-        setTasks(chores);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch chores');
-        console.error('Error fetching chores:', err);
-      } finally {
-        setLoading(false);
+      if (!token) {
+        throw new Error('No access token found');
       }
-    };
 
+      const response = await fetch('/chores', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch chores');
+      }
+
+      const chores = await response.json();
+      setTasks(chores);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch chores');
+      console.error('Error fetching chores:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchChores();
-  }, []);
+
+    // Pass the refresh function to parent component
+    if (onRefreshTasks) {
+      onRefreshTasks(fetchChores);
+    }
+  }, [onRefreshTasks]);
 
   const filteredTasks =
     activeTab === 'all'
@@ -351,7 +359,7 @@ const TasksWidget = ({
                           )}`}
                         >
                           {getStatusIcon(task.status)}
-                          {task.status.replace('_', ' ')}
+                          {task.status.toLowerCase().replace('_', ' ')}
                         </span>
                       </td>
                       <td className="py-4 px-4">
