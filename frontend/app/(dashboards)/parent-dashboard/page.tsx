@@ -8,7 +8,7 @@ import TaskModal from '@/app/components/newTaskModal';
 import TaskForm from '@/app/components/task-form';
 import FamilyForm from '@/app/components/family-form';
 import AddMemberForm from '@/app/components/addMember-form';
-//import TasksWidget from '@/app/components/tasksWidget';
+import TasksWidget from '@/app/components/tasksWidget';
 import Button from '@/app/components/ui/button';
 
 export default function ParentDashboard() {
@@ -19,7 +19,7 @@ export default function ParentDashboard() {
   const [openTaskModal, setOpenTaskModal] = useState(false);
   const [openCreateFamilyModal, setOpenCreateFamilyModal] = useState(false);
   const [openAddMemberModal, setOpenAddMemberModal] = useState(false);
-  // const [familyMembers, setFamilyMembers] = useState<UserType[]>([]);
+  const [familyMembers, setFamilyMembers] = useState<UserType[]>([]);
   const [showCreateFamilyButton, setShowCreateFamilyButton] = useState(false);
   // const [loading, setLoading] = useState(true);
 
@@ -140,8 +140,10 @@ export default function ParentDashboard() {
           />
         </TaskModal>
       )}
-      {/* Task Widget */}
-      {/* <TasksWidget tasks={tasks} users={users} /> */}
+      {/* Tasks Widget */}
+      {!showCreateFamilyButton && (
+        <TasksWidget tasks={tasks} users={familyMembers} />
+      )}
     </div>
   );
 }
