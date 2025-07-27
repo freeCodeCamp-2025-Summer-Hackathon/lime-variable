@@ -253,7 +253,7 @@ export default function ChildDashboard() {
           </div>
         )}
 
-        {task.status === 'completed' && (
+        {task.status === 'approved' && (
           <div className="bg-green-50 text-green-800 px-4 py-2 rounded-lg">
             ✅ Completed! +{task.points} points
           </div>
