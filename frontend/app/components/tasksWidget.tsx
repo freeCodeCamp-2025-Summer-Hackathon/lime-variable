@@ -22,7 +22,7 @@ const TasksWidget = ({
   const [tasks, setTasks] = useState<TaskType[]>(initialTasks);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
+  console.log(tasks, 'tasks');
   // Fetch chores from the API
   useEffect(() => {
     const fetchChores = async () => {
@@ -71,7 +71,7 @@ const TasksWidget = ({
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
       case 'in_progress':

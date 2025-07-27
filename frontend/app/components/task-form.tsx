@@ -112,7 +112,11 @@ export default function TaskForm({
       const newTask: TaskType = await task.json();
       setTasks((prevTasks) => [
         ...prevTasks,
-        { ...newTask, dueDate: formatDate(new Date(newTask.dueDate)) },
+        {
+          ...newTask,
+          dueDate: formatDate(new Date(newTask.dueDate)),
+          status: newTask.status.toLowerCase() as TaskType['status'],
+        },
       ]);
     } catch (error) {
       console.error('Failed to create task:', error);

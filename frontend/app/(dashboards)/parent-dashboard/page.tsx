@@ -27,7 +27,7 @@ export default function ParentDashboard() {
   const [familyMembers, setFamilyMembers] = useState<UserType[]>([]);
   const [showCreateFamilyButton, setShowCreateFamilyButton] = useState(false);
   // const [loading, setLoading] = useState(true);
-
+  console.log(tasks, 'tasks');
   const router = useRouter();
 
   useEffect(() => {
