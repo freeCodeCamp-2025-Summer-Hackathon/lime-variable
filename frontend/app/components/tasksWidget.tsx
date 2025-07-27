@@ -350,7 +350,7 @@ const TasksWidget = ({
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleApprove(task.id)}
-                              className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors flex items-center gap-1"
+                              className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors flex items-center gap-1 cursor-pointer"
                             >
                               <CheckCircle className="w-3 h-3" />
                               Approve
