@@ -176,10 +176,8 @@ export default function TaskForm({
           onChange={(e) => setAssignedTo(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <option value="">Select a child</option>
+          <option value="">Select a family member</option>
           {familyMembers?.map((member) => {
-            if (member.role !== 'CHILD') return null;
-
             return (
               <option key={member.id} value={member.id}>
                 {member.name}
