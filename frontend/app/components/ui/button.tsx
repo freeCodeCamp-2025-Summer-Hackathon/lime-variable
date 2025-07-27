@@ -1,6 +1,13 @@
 import { ReactNode } from 'react';
 
-type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'success' | 'ghost';
+type ButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'danger'
+  | 'success'
+  | 'ghost'
+  | 'outline'
+  | 'purple';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps {
@@ -31,6 +38,10 @@ const Button = ({
     danger: 'bg-red-600 text-white hover:bg-red-700',
     success: 'bg-green-600 text-white hover:bg-green-700',
     ghost: 'bg-transparent text-gray-600 hover:text-gray-900 border-0 p-0 m-0',
+    outline:
+      'bg-transparent text-purple-600 border border-purple-600 hover:bg-purple-50 focus:ring-purple-500',
+    purple:
+      'bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500',
   };
 
   const sizeClasses = {

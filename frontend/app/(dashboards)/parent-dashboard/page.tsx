@@ -7,6 +7,7 @@ import { UserType, TaskType } from '../../types';
 import TaskModal from '@/app/components/newTaskModal';
 import TaskForm from '@/app/components/task-form';
 import FamilyForm from '@/app/components/family-form';
+import AddMemberForm from '@/app/components/addMember-form';
 //import TasksWidget from '@/app/components/tasksWidget';
 import Button from '@/app/components/ui/button';
 
@@ -17,6 +18,7 @@ export default function ParentDashboard() {
   const [tasks, setTasks] = useState<TaskType[]>([]);
   const [openTaskModal, setOpenTaskModal] = useState(false);
   const [openCreateFamilyModal, setOpenCreateFamilyModal] = useState(false);
+  const [openAddMemberModal, setOpenAddMemberModal] = useState(false);
   // const [familyMembers, setFamilyMembers] = useState<UserType[]>([]);
   const [showCreateFamilyButton, setShowCreateFamilyButton] = useState(false);
   // const [loading, setLoading] = useState(true);
@@ -46,6 +48,7 @@ export default function ParentDashboard() {
   function closeModal() {
     setOpenTaskModal(false);
     setOpenCreateFamilyModal(false);
+    setOpenAddMemberModal(false);
   }
 
   return (
@@ -67,9 +70,21 @@ export default function ParentDashboard() {
           </div>
           <div className="flex items-center space-x-4">
             {!showCreateFamilyButton && (
-              <Button className="flex-1" onClick={() => setOpenTaskModal(true)}>
-                + Create Task
-              </Button>
+              <>
+                <Button
+                  className="min-w-32"
+                  onClick={() => setOpenAddMemberModal(true)}
+                  variant="purple"
+                >
+                  + Add Members
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={() => setOpenTaskModal(true)}
+                >
+                  + Create Task
+                </Button>
+              </>
             )}
             {showCreateFamilyButton && (
               <Button
@@ -89,7 +104,7 @@ export default function ParentDashboard() {
           </div>
         </div>
       </div>
-      {/* Modal */}
+      {/* Modals */}
       {openTaskModal && (
         <TaskModal onClose={closeModal}>
           <TaskForm
@@ -109,6 +124,18 @@ export default function ParentDashboard() {
                 refreshUserData();
                 setShowCreateFamilyButton(false);
               }
+            }}
+          />
+        </TaskModal>
+      )}
+      {openAddMemberModal && (
+        <TaskModal onClose={closeModal}>
+          <AddMemberForm
+            onCancel={closeModal}
+            onSubmit={(memberData) => {
+              console.log('New member added:', memberData);
+              closeModal();
+              // Optionally refresh any family member data here
             }}
           />
         </TaskModal>
