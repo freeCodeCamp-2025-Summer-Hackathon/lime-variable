@@ -357,7 +357,7 @@ const TasksWidget = ({
                             </button>
                             <button
                               onClick={() => handleReject(task.id)}
-                              className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors flex items-center gap-1"
+                              className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors flex items-center gap-1 cursor-pointer"
                             >
                               <XCircle className="w-3 h-3" />
                               Reject
