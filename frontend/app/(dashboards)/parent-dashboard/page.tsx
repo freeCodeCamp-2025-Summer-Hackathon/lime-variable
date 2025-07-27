@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   getCurrentUser,
@@ -24,12 +24,46 @@ export default function ParentDashboard() {
   const [openAddMemberModal, setOpenAddMemberModal] = useState(false);
   const [familyMembers, setFamilyMembers] = useState<UserType[]>([]);
   const [showCreateFamilyButton, setShowCreateFamilyButton] = useState(false);
-
-  // Create a ref to hold the refresh function from TasksWidget
-  const refreshTasksRef = useRef<(() => void) | null>(null);
+  const [tasksLoading, setTasksLoading] = useState(true);
+  const [tasksError, setTasksError] = useState('');
 
   console.log(tasks, 'tasks');
   const router = useRouter();
+
+  // Fetch chores from the API
+  const fetchChores = async () => {
+    try {
+      setTasksLoading(true);
+      setTasksError('');
+      const token = getStoredToken();
+
+      if (!token) {
+        throw new Error('No access token found');
+      }
+
+      const response = await fetch('/chores', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch chores');
+      }
+
+      const chores = await response.json();
+      setTasks(chores);
+    } catch (err) {
+      setTasksError(
+        err instanceof Error ? err.message : 'Failed to fetch chores'
+      );
+      console.error('Error fetching chores:', err);
+    } finally {
+      setTasksLoading(false);
+    }
+  };
 
   useEffect(() => {
     const user = getCurrentUser();
@@ -41,9 +75,11 @@ export default function ParentDashboard() {
     console.log(user, 'user');
     if (!user.familyId) {
       setShowCreateFamilyButton(true);
+      setTasksLoading(false); // No need to load tasks if no family
     } else {
-      // Fetch family members when family exists
+      // Fetch family members and tasks when family exists
       fetchFamilyMembers();
+      fetchChores();
     }
   }, [router]);
 
@@ -71,13 +107,6 @@ export default function ParentDashboard() {
   const handleLogout = () => {
     logout();
     router.push('/');
-  };
-
-  // Function to refresh tasks - will be called after task creation
-  const refreshTasks = () => {
-    if (refreshTasksRef.current) {
-      refreshTasksRef.current();
-    }
   };
 
   if (!currentUser) return <div>Loading...</div>;
@@ -151,7 +180,7 @@ export default function ParentDashboard() {
             setTasks={setTasks}
             onTaskCreated={() => {
               closeModal();
-              refreshTasks(); // Refresh tasks after creation
+              fetchChores(); // Refresh tasks after creation
             }}
           />
         </TaskModal>
@@ -165,6 +194,8 @@ export default function ParentDashboard() {
               if (familyData.id) {
                 refreshUserData();
                 setShowCreateFamilyButton(false);
+                // Start fetching tasks now that family exists
+                fetchChores();
               }
             }}
           />
@@ -189,9 +220,9 @@ export default function ParentDashboard() {
         <TasksWidget
           tasks={tasks}
           users={familyMembers}
-          onRefreshTasks={(refreshFn) => {
-            refreshTasksRef.current = refreshFn;
-          }}
+          loading={tasksLoading}
+          error={tasksError}
+          onTaskStatusUpdate={fetchChores} // Refresh when task status changes
         />
       )}
     </div>

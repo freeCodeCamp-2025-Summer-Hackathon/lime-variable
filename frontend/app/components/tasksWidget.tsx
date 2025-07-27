@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { UserType, TaskType } from '../types';
 import { getStoredToken } from '../lib/auth';
 import {
@@ -12,60 +12,21 @@ import {
 } from 'lucide-react';
 
 const TasksWidget = ({
-  tasks: initialTasks,
+  tasks,
   users,
-  onRefreshTasks,
+  loading,
+  error,
+  onTaskStatusUpdate,
 }: {
   tasks: TaskType[];
   users: UserType[];
-  onRefreshTasks?: (refreshFn: () => void) => void;
+  loading: boolean;
+  error: string;
+  onTaskStatusUpdate?: () => void;
 }) => {
   const [activeTab, setActiveTab] = useState('all');
-  const [tasks, setTasks] = useState<TaskType[]>(initialTasks);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+
   console.log(tasks, 'tasks');
-
-  // Fetch chores from the API
-  const fetchChores = async () => {
-    try {
-      setLoading(true);
-      const token = getStoredToken();
-
-      if (!token) {
-        throw new Error('No access token found');
-      }
-
-      const response = await fetch('/chores', {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch chores');
-      }
-
-      const chores = await response.json();
-      setTasks(chores);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch chores');
-      console.error('Error fetching chores:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchChores();
-
-    // Pass the refresh function to parent component
-    if (onRefreshTasks) {
-      onRefreshTasks(fetchChores);
-    }
-  }, [onRefreshTasks]);
 
   const filteredTasks =
     activeTab === 'all'
@@ -123,12 +84,9 @@ const TasksWidget = ({
         },
       });
 
-      if (response.ok) {
-        setTasks(
-          tasks.map((task) =>
-            task.id === taskId ? { ...task, status: 'completed' } : task
-          )
-        );
+      if (response.ok && onTaskStatusUpdate) {
+        // Refresh tasks from parent instead of local state update
+        onTaskStatusUpdate();
       }
     } catch (err) {
       console.error('Error approving task:', err);
@@ -146,12 +104,9 @@ const TasksWidget = ({
         },
       });
 
-      if (response.ok) {
-        setTasks(
-          tasks.map((task) =>
-            task.id === taskId ? { ...task, status: 'rejected' } : task
-          )
-        );
+      if (response.ok && onTaskStatusUpdate) {
+        // Refresh tasks from parent instead of local state update
+        onTaskStatusUpdate();
       }
     } catch (err) {
       console.error('Error rejecting task:', err);
@@ -196,7 +151,7 @@ const TasksWidget = ({
       <div className="max-w-6xl mx-auto">
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-6">
-            All Chores
+            All Tasks
           </h2>
 
           {/* Submitted info section */}
