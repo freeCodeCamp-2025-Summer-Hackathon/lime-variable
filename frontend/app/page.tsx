@@ -40,7 +40,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <button
                 onClick={() => handleUserTypeSelection('parent')}
-                className="group bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 min-w-[280px]"
+                className="group bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 min-w-[280px] cursor-pointer"
               >
                 <div className="text-6xl mb-4">👨👩</div>
                 <h3 className="text-2xl font-bold text-blue-600 mb-2">
@@ -50,7 +50,7 @@ export default function Home() {
                   Manage your family&apos;s chores, create accounts for your
                   children, and track progress
                 </p>
-                <div className="mt-4 inline-flex items-center text-blue-600 font-bold group-hover:text-blue-700">
+                <div className="mt-4 inline-flex items-center text-blue-600 font-bold group-hover:text-blue-700 ">
                   Continue as Parent
                   <svg
                     className="ml-2 w-4 h-4 transform group-hover:translate-x-1 transition-transform"
@@ -70,7 +70,7 @@ export default function Home() {
 
               <button
                 onClick={() => handleUserTypeSelection('child')}
-                className="group bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 min-w-[280px]"
+                className="group bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 min-w-[280px] cursor-pointer"
               >
                 <div className="text-6xl mb-4">👧👦</div>
                 <h3 className="text-2xl font-bold text-blue-600 mb-2">Child</h3>
@@ -110,7 +110,7 @@ export default function Home() {
           <div className="mb-4">
             <button
               onClick={handleBackToSelection}
-              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium mb-4"
+              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium mb-4 cursor-pointer"
             >
               <svg
                 className="mr-2 w-4 h-4"

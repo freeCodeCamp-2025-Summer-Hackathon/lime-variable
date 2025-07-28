@@ -132,7 +132,7 @@ export default function Login({ onToggleToSignUp, userType }: LoginProps) {
             Don&apos;t have an account?{' '}
             <button
               onClick={onToggleToSignUp}
-              className="text-blue-600 hover:text-blue-700 font-medium"
+              className="text-blue-600 hover:text-blue-700 font-medium cursor-pointer"
             >
               Sign up
             </button>
@@ -145,8 +145,8 @@ export default function Login({ onToggleToSignUp, userType }: LoginProps) {
           <div className="text-center">
             <p className="text-sm text-gray-500 mb-2">Are you a parent?</p>
             <p className="text-xs text-gray-400">
-              Go back and select "Parent" to access parent features and sign up
-              options.
+              Go back and select &quot;Parent&quot; to access parent features
+              and sign up options.
             </p>
           </div>
         </div>
