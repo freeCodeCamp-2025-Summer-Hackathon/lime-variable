@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserType, TaskType } from '../types';
+import { TaskType } from '../types';
 import { getStoredToken } from '../lib/auth';
 import {
   Clock,
@@ -13,13 +13,11 @@ import {
 
 const TasksWidget = ({
   tasks,
-  users,
   loading,
   error,
   onTaskStatusUpdate,
 }: {
   tasks: TaskType[];
-  users: UserType[];
   loading: boolean;
   error: string;
   onTaskStatusUpdate?: () => void;
@@ -169,7 +167,7 @@ const TasksWidget = ({
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="max-w-6xl mx-auto">
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-6">
+          <h2 className="text-xl font-semibold text-blue-500 mb-6">
             All Tasks
           </h2>
 
@@ -310,7 +308,7 @@ const TasksWidget = ({
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-gray-600">
+                      <td className="py-3 px-4 text-gray-600 text-left">
                         {task.assignedToUser
                           ? task.assignedToUser.name
                           : 'not assigned'}

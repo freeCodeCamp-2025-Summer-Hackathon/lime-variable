@@ -134,21 +134,9 @@ export default function ParentDashboard() {
           </div>
           <div className="flex items-center space-x-4">
             {!showCreateFamilyButton && (
-              <>
-                <Button
-                  className="min-w-32"
-                  onClick={() => setOpenAddMemberModal(true)}
-                  variant="purple"
-                >
-                  + Add Members
-                </Button>
-                <Button
-                  className="flex-1"
-                  onClick={() => setOpenTaskModal(true)}
-                >
-                  + Create Task
-                </Button>
-              </>
+              <Button className="flex-1" onClick={() => setOpenTaskModal(true)}>
+                + Create Task
+              </Button>
             )}
             {showCreateFamilyButton && (
               <Button
@@ -168,6 +156,52 @@ export default function ParentDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Family Members Section */}
+      {!showCreateFamilyButton && familyMembers.length > 0 && (
+        <div className=" bg-gray-50 max-w-6xl mx-auto pt-6">
+          <div className="bg-white p-6 rounded-lg shadow-sm ">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-purple-500">
+                Family Members
+              </h2>
+              <Button
+                className="min-w-32"
+                onClick={() => setOpenAddMemberModal(true)}
+                variant="purple"
+              >
+                + Add Members
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {familyMembers.map((member) => (
+                <div
+                  key={member.id}
+                  className="flex flex-col items-center p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-xl mb-2">
+                    {member.avatar || member.name?.charAt(0) || 'U'}
+                  </div>
+                  <p className="font-medium text-center">{member.name}</p>
+                  <p className="text-sm text-gray-500 text-center">
+                    {member.role === 'CHILD' ? 'Child' : 'Parent'}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tasks Widget */}
+      {!showCreateFamilyButton && (
+        <TasksWidget
+          tasks={tasks}
+          loading={tasksLoading}
+          error={tasksError}
+          onTaskStatusUpdate={fetchChores}
+        />
+      )}
 
       {/* Modals */}
       {openTaskModal && (
@@ -203,17 +237,6 @@ export default function ParentDashboard() {
             }}
           />
         </TaskModal>
-      )}
-
-      {/* Tasks Widget */}
-      {!showCreateFamilyButton && (
-        <TasksWidget
-          tasks={tasks}
-          users={familyMembers}
-          loading={tasksLoading}
-          error={tasksError}
-          onTaskStatusUpdate={fetchChores}
-        />
       )}
     </div>
   );
