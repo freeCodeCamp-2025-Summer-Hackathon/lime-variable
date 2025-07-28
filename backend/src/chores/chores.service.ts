@@ -17,6 +17,7 @@ import { UpdateChoreDto } from './dto/update-chore.dto';
 @Injectable()
 export class ChoresService {
   constructor(private prisma: PrismaService) {}
+
   async create(createChoreDto: CreateChoreDto, user: AuthenticatedUser) {
     if (!user.familyId)
       throw new BadRequestException('You must have a family to create a chore');
@@ -29,6 +30,7 @@ export class ChoresService {
       familyId: user.familyId,
       assignedBy: createChoreDto.assignedTo ? user.id : null,
     };
+
     if (createChoreDto.assignedTo) {
       const assignedUser = await this.prisma.user.findUnique({
         where: { id: createChoreDto.assignedTo },
@@ -76,7 +78,6 @@ export class ChoresService {
     try {
       const updatedChore = await this.prisma.chore.update({
         where: { id: choreId },
-
         data: { assignedTo: assignedUser.id, assignedBy: user.id },
       });
 
@@ -87,6 +88,7 @@ export class ChoresService {
       });
     }
   }
+
   async approve(
     choreId: string,
     user: AuthenticatedUser,
@@ -95,6 +97,7 @@ export class ChoresService {
     const chore = await this.prisma.chore.findUnique({
       where: { id: choreId },
     });
+
     if (!chore) throw new NotFoundException('Chore does not exist');
 
     if (user.familyId !== chore.familyId)
@@ -112,6 +115,7 @@ export class ChoresService {
     if (status === 'REJECTED') {
       updateValues.rejectedAt = new Date();
     }
+
     try {
       const updatedChore = await this.prisma.chore.update({
         where: { id: choreId },
@@ -138,6 +142,14 @@ export class ChoresService {
         'You do not have access to this resource',
       );
 
+    if (
+      chore.status !== ChoreStatus.IN_PROGRESS &&
+      chore.status !== ChoreStatus.PENDING
+    )
+      throw new BadRequestException(
+        'Chore must be in progress or pending to submit',
+      );
+
     try {
       const updatedChore = await this.prisma.chore.update({
         where: { id: choreId },
@@ -152,9 +164,37 @@ export class ChoresService {
     }
   }
 
+  async start(choreId: string, userId: string) {
+    const chore = await this.prisma.chore.findUnique({
+      where: { id: choreId },
+    });
+
+    if (!chore) throw new NotFoundException('Chore does not exist');
+
+    if (userId !== chore.assignedTo)
+      throw new UnauthorizedException('Only assigned user can start the chore');
+
+    if (chore.status !== ChoreStatus.PENDING)
+      throw new BadRequestException('Chore must be in pending status to start');
+
+    try {
+      const updatedChore = await this.prisma.chore.update({
+        where: { id: choreId },
+        data: { status: ChoreStatus.IN_PROGRESS },
+      });
+
+      return updatedChore;
+    } catch (error) {
+      throw new InternalServerErrorException('Chore could not be started', {
+        cause: error,
+      });
+    }
+  }
+
   async findAll(user: AuthenticatedUser) {
     if (!user.familyId)
       throw new BadRequestException('You must have a family to fetch chores');
+
     try {
       const where: { familyId: string; assignedTo?: string } = {
         familyId: user.familyId,
@@ -164,7 +204,7 @@ export class ChoresService {
       if (user.role === 'CHILD') {
         where.assignedTo = user.id;
       }
-      // If user is a parent, they can see all chores created
+      // If user is a parent, they can see all chores in their family
 
       const allChores = await this.prisma.chore.findMany({
         where,
@@ -243,9 +283,11 @@ export class ChoresService {
     if (user.familyId !== chore.familyId)
       throw new ForbiddenException('You do not have access to this resource');
 
+    // Additional check: if user is a child, they can only see chores assigned to them
     if (user.role === 'CHILD' && chore.assignedTo !== user.id) {
       throw new ForbiddenException('You can only view chores assigned to you');
     }
+
     return chore;
   }
 
@@ -289,6 +331,7 @@ export class ChoresService {
         'You do not have permission to delete the resource',
       );
     }
+
     const chore = await this.prisma.chore.findUnique({
       where: { id },
     });
@@ -299,6 +342,7 @@ export class ChoresService {
       throw new ForbiddenException(
         'You do not have permission to delete the resource',
       );
+
     try {
       await this.prisma.chore.delete({
         where: { id },

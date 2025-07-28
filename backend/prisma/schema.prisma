@@ -15,6 +15,7 @@ enum UserRole {
 
 enum ChoreStatus {
   PENDING
+  IN_PROGRESS
   SUBMITTED
   APPROVED
   REJECTED
