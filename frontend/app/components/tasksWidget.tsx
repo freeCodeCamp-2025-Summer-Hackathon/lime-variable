@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { UserType, TaskType } from '../types';
+import { getStoredToken } from '../lib/auth';
 import {
   Clock,
   CheckCircle,
@@ -13,11 +14,19 @@ import {
 const TasksWidget = ({
   tasks,
   users,
+  loading,
+  error,
+  onTaskStatusUpdate,
 }: {
   tasks: TaskType[];
   users: UserType[];
+  loading: boolean;
+  error: string;
+  onTaskStatusUpdate?: () => void;
 }) => {
   const [activeTab, setActiveTab] = useState('all');
+
+  console.log(tasks, 'tasks');
 
   const filteredTasks =
     activeTab === 'all'
@@ -25,20 +34,20 @@ const TasksWidget = ({
       : tasks.filter((task) => task.status === activeTab);
   const submittedTasks = tasks.filter((task) => task.status === 'submitted');
 
-  const getChildName = (childId: string) => {
-    const child = users.find((user) => user.id === childId);
-    return child?.name ?? 'Bounty';
+  const getUserName = (userId: string) => {
+    const user = users.find((user) => user.id === userId);
+    return user?.name ?? 'Unknown User';
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
       case 'in_progress':
         return 'bg-blue-100 text-blue-800';
       case 'submitted':
         return 'bg-purple-100 text-purple-800';
-      case 'completed':
+      case 'approved':
         return 'bg-green-100 text-green-800';
       case 'rejected':
         return 'bg-red-100 text-red-800';
@@ -48,14 +57,14 @@ const TasksWidget = ({
   };
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'pending':
         return <Clock className="w-4 h-4" />;
       case 'in_progress':
         return <Loader2 className="w-4 h-4" />;
       case 'submitted':
         return <Send className="w-4 h-4" />;
-      case 'completed':
+      case 'approved':
         return <CheckCircle className="w-4 h-4" />;
       case 'rejected':
         return <XCircle className="w-4 h-4" />;
@@ -63,6 +72,107 @@ const TasksWidget = ({
         return null;
     }
   };
+
+  const handleApprove = async (taskId: string) => {
+    try {
+      const token = getStoredToken();
+
+      if (!token) {
+        throw new Error('No access token found');
+      }
+
+      const response = await fetch(`/chores/${taskId}/approval`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'APPROVED',
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to approve task');
+      }
+
+      if (onTaskStatusUpdate) {
+        // Refresh tasks from parent instead of local state update
+        onTaskStatusUpdate();
+      }
+    } catch (err) {
+      console.error('Error approving task:', err);
+      // You might want to show a toast notification here
+    }
+  };
+
+  const handleReject = async (taskId: string) => {
+    try {
+      const token = getStoredToken();
+
+      if (!token) {
+        throw new Error('No access token found');
+      }
+
+      const response = await fetch(`/chores/${taskId}/approval`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'REJECTED',
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to reject task');
+      }
+
+      if (onTaskStatusUpdate) {
+        // Refresh tasks from parent instead of local state update
+        onTaskStatusUpdate();
+      }
+    } catch (err) {
+      console.error('Error rejecting task:', err);
+      // You might want to show a toast notification here
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6 bg-gray-50 min-h-screen">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              <span className="ml-2 text-gray-600">Loading chores...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 bg-gray-50 min-h-screen">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="text-center py-8">
+              <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Error Loading Chores
+              </h3>
+              <p className="text-gray-600">{error}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -78,22 +188,23 @@ const TasksWidget = ({
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-5 h-5 text-purple-600" />
                 <h3 className="font-medium text-purple-600">
-                  Tasks Awaiting Your Review
+                  Chores Awaiting Your Review
                 </h3>
               </div>
               <p className="text-sm text-purple-600">
-                {submittedTasks.length} task
-                {submittedTasks.length !== 1 ? 's' : ''} submitted by your
-                children need{submittedTasks.length === 1 ? 's' : ''} approval
-                or feedback.
+                {submittedTasks.length} chore
+                {submittedTasks.length !== 1 ? 's' : ''} submitted by family
+                members need{submittedTasks.length === 1 ? 's' : ''} approval or
+                feedback.
               </p>
             </div>
           )}
+
           {/* Task status Navigation */}
           <div className="border-b border-gray-200 mb-6">
             <nav className="flex space-x-8">
               {[
-                { key: 'all', label: 'All Tasks', count: tasks.length },
+                { key: 'all', label: 'All Chores', count: tasks.length },
                 {
                   key: 'pending',
                   label: 'Pending',
@@ -110,9 +221,9 @@ const TasksWidget = ({
                   count: tasks.filter((t) => t.status === 'submitted').length,
                 },
                 {
-                  key: 'completed',
-                  label: 'Completed',
-                  count: tasks.filter((t) => t.status === 'completed').length,
+                  key: 'approved',
+                  label: 'approved',
+                  count: tasks.filter((t) => t.status === 'approved').length,
                 },
                 {
                   key: 'rejected',
@@ -152,7 +263,7 @@ const TasksWidget = ({
               <thead>
                 <tr className="border-b border-gray-200">
                   <th className="text-left py-3 px-4 font-medium text-gray-700">
-                    Task
+                    Chore
                   </th>
                   <th className="text-left py-3 px-4 font-medium text-gray-700">
                     Assigned To
@@ -166,19 +277,30 @@ const TasksWidget = ({
                   <th className="text-left py-3 px-4 font-medium text-gray-700">
                     Status
                   </th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {filteredTasks.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={5}
+                      colSpan={6}
                       className="py-8 px-4 text-center text-gray-500"
                     >
-                      <div className="text-4xl mb-2">📋</div>
+                      <div className="text-4xl mb-2">🏠</div>
                       <div className="text-lg font-medium mb-1">
-                        No tasks found
+                        No chores found
                       </div>
+                      <p className="text-sm">
+                        {activeTab === 'all'
+                          ? 'Create your first chore to get started!'
+                          : `No chores with status "${activeTab.replace(
+                              '_',
+                              ' '
+                            )}"`}
+                      </p>
                     </td>
                   </tr>
                 ) : (
@@ -198,7 +320,7 @@ const TasksWidget = ({
                         </div>
                       </td>
                       <td className="py-3 px-4 text-gray-600">
-                        {getChildName(task.assignedTo)}
+                        {getUserName(task.assignedTo)}
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-1">
@@ -209,7 +331,9 @@ const TasksWidget = ({
                         </div>
                       </td>
                       <td className="py-3 px-4 text-gray-600">
-                        {task.dueDate}
+                        {task.dueDate
+                          ? new Date(task.dueDate).toLocaleDateString()
+                          : 'No due date'}
                       </td>
                       <td className="py-4 px-4">
                         <span
@@ -218,22 +342,22 @@ const TasksWidget = ({
                           )}`}
                         >
                           {getStatusIcon(task.status)}
-                          {task.status.replace('_', ' ')}
+                          {task.status.toLowerCase().replace('_', ' ')}
                         </span>
                       </td>
                       <td className="py-4 px-4">
                         {task.status === 'submitted' ? (
                           <div className="flex gap-2">
                             <button
-                              onClick={() => {}}
-                              className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors flex items-center gap-1"
+                              onClick={() => handleApprove(task.id)}
+                              className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors flex items-center gap-1 cursor-pointer"
                             >
                               <CheckCircle className="w-3 h-3" />
                               Approve
                             </button>
                             <button
-                              onClick={() => {}}
-                              className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors flex items-center gap-1"
+                              onClick={() => handleReject(task.id)}
+                              className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors flex items-center gap-1 cursor-pointer"
                             >
                               <XCircle className="w-3 h-3" />
                               Reject

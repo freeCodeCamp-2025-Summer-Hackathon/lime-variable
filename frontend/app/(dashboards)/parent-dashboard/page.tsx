@@ -2,26 +2,73 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getCurrentUser, logout, refreshUserData } from '../../lib/auth';
+import {
+  getCurrentUser,
+  logout,
+  refreshUserData,
+  getStoredToken,
+} from '../../lib/auth';
 import { UserType, TaskType } from '../../types';
 import TaskModal from '@/app/components/newTaskModal';
 import TaskForm from '@/app/components/task-form';
 import FamilyForm from '@/app/components/family-form';
-//import TasksWidget from '@/app/components/tasksWidget';
+import AddMemberForm from '@/app/components/addMember-form';
+import TasksWidget from '@/app/components/tasksWidget';
 import Button from '@/app/components/ui/button';
 
 export default function ParentDashboard() {
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
-  // const [token, setToken] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [tasks, setTasks] = useState<TaskType[]>([]);
   const [openTaskModal, setOpenTaskModal] = useState(false);
   const [openCreateFamilyModal, setOpenCreateFamilyModal] = useState(false);
-  // const [familyMembers, setFamilyMembers] = useState<UserType[]>([]);
+  const [openAddMemberModal, setOpenAddMemberModal] = useState(false);
+  const [familyMembers, setFamilyMembers] = useState<UserType[]>([]);
   const [showCreateFamilyButton, setShowCreateFamilyButton] = useState(false);
-  // const [loading, setLoading] = useState(true);
+  const [tasksLoading, setTasksLoading] = useState(true);
+  const [tasksError, setTasksError] = useState('');
 
+  console.log(tasks, 'tasks');
   const router = useRouter();
+
+  // Fetch chores from the API
+  const fetchChores = async () => {
+    try {
+      setTasksLoading(true);
+      setTasksError('');
+      const token = getStoredToken();
+
+      if (!token) {
+        throw new Error('No access token found');
+      }
+
+      const response = await fetch('/chores', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch chores');
+      }
+
+      const chores = await response.json();
+      setTasks(
+        chores.map((chore: TaskType) => ({
+          ...chore,
+          status: chore.status.toLowerCase(),
+        }))
+      );
+    } catch (err) {
+      setTasksError(
+        err instanceof Error ? err.message : 'Failed to fetch chores'
+      );
+      console.error('Error fetching chores:', err);
+    } finally {
+      setTasksLoading(false);
+    }
+  };
 
   useEffect(() => {
     const user = getCurrentUser();
@@ -33,8 +80,34 @@ export default function ParentDashboard() {
     console.log(user, 'user');
     if (!user.familyId) {
       setShowCreateFamilyButton(true);
+      setTasksLoading(false); // No need to load tasks if no family
+    } else {
+      // Fetch family members and tasks when family exists
+      fetchFamilyMembers();
+      fetchChores();
     }
   }, [router]);
+
+  const fetchFamilyMembers = async () => {
+    try {
+      const user = getCurrentUser();
+      const token = getStoredToken();
+      if (!token || !user?.familyId) return;
+
+      const response = await fetch(`/users/family/${user.familyId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (response.ok) {
+        const members = await response.json();
+        setFamilyMembers(members);
+      }
+    } catch (error) {
+      console.error('Error fetching family members:', error);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -46,6 +119,7 @@ export default function ParentDashboard() {
   function closeModal() {
     setOpenTaskModal(false);
     setOpenCreateFamilyModal(false);
+    setOpenAddMemberModal(false);
   }
 
   return (
@@ -67,9 +141,21 @@ export default function ParentDashboard() {
           </div>
           <div className="flex items-center space-x-4">
             {!showCreateFamilyButton && (
-              <Button className="flex-1" onClick={() => setOpenTaskModal(true)}>
-                + Create Task
-              </Button>
+              <>
+                <Button
+                  className="min-w-32"
+                  onClick={() => setOpenAddMemberModal(true)}
+                  variant="purple"
+                >
+                  + Add Members
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={() => setOpenTaskModal(true)}
+                >
+                  + Create Task
+                </Button>
+              </>
             )}
             {showCreateFamilyButton && (
               <Button
@@ -89,7 +175,8 @@ export default function ParentDashboard() {
           </div>
         </div>
       </div>
-      {/* Modal */}
+
+      {/* Modals */}
       {openTaskModal && (
         <TaskModal onClose={closeModal}>
           <TaskForm
@@ -108,13 +195,37 @@ export default function ParentDashboard() {
               if (familyData.id) {
                 refreshUserData();
                 setShowCreateFamilyButton(false);
+                // Start fetching tasks now that family exists
+                fetchChores();
               }
             }}
           />
         </TaskModal>
       )}
-      {/* Task Widget */}
-      {/* <TasksWidget tasks={tasks} users={users} /> */}
+      {openAddMemberModal && (
+        <TaskModal onClose={closeModal}>
+          <AddMemberForm
+            onCancel={closeModal}
+            onSubmit={(memberData) => {
+              console.log('New member added:', memberData);
+              closeModal();
+              // Refresh family members list
+              fetchFamilyMembers();
+            }}
+          />
+        </TaskModal>
+      )}
+
+      {/* Tasks Widget */}
+      {!showCreateFamilyButton && (
+        <TasksWidget
+          tasks={tasks}
+          users={familyMembers}
+          loading={tasksLoading}
+          error={tasksError}
+          onTaskStatusUpdate={fetchChores} // Refresh when task status changes
+        />
+      )}
     </div>
   );
 }

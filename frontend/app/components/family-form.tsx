@@ -63,34 +63,40 @@ export default function FamilyForm({ onCancel, onSubmit }: TaskFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          {error}
+    <>
+      <h3 className="text-xl font-semibold text-gray-800 mb-6">
+        Create You Family
+      </h3>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            {error}
+          </div>
+        )}
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Family Name
+          </label>
+          <input
+            type="text"
+            value={taskTitle}
+            onChange={(e) => setTaskTitle(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
         </div>
-      )}
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Family Name
-        </label>
-        <input
-          type="text"
-          value={taskTitle}
-          onChange={(e) => setTaskTitle(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-        />
-      </div>
-
-      <div className="flex space-x-3 pt-4">
-        <Button type="submit" disabled={loading}>
-          {loading ? 'Creating...' : '+ Create Family'}
-        </Button>
-        <Button variant="secondary" onClick={onCancel} type="button">
-          Cancel
-        </Button>
-      </div>
-    </form>
+        <div className="flex space-x-3 pt-4">
+          <Button type="submit" disabled={loading}>
+            {loading ? 'Creating...' : '+ Create Family'}
+          </Button>
+          <Button variant="secondary" onClick={onCancel} type="button">
+            Cancel
+          </Button>
+        </div>
+      </form>
+    </>
   );
 }
