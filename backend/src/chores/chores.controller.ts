@@ -121,8 +121,12 @@ export class ChoresController {
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles(UserRole.PARENT)
-  @ApiOperation({ summary: 'Get all chores created by the user' })
+  @Roles(UserRole.PARENT, UserRole.CHILD)
+  @ApiOperation({
+    summary: 'Get chores for the user',
+    description:
+      'Parents see all family chores, children see only their assigned chores',
+  })
   @ApiInternalServerErrorResponse({ description: 'Could not fetch chores' })
   findAll(@GetUser() user: AuthenticatedUser) {
     return this.choresService.findAll(user);
@@ -132,7 +136,7 @@ export class ChoresController {
   @ApiOperation({ summary: 'Get a specific chore by ID' })
   @ApiNotFoundResponse({ description: 'Chore does not exist' })
   @ApiUnauthorizedResponse({
-    description: 'User is not the creator of the chore',
+    description: 'User does not have access to this chore',
   })
   @ApiInternalServerErrorResponse({ description: 'Could not fetch chore' })
   findOne(
@@ -143,6 +147,8 @@ export class ChoresController {
   }
 
   @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PARENT)
   @ApiOperation({ summary: 'Update a specific chore' })
   @ApiBadRequestResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({
