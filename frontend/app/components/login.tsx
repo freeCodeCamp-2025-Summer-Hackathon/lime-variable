@@ -25,7 +25,6 @@ export default function Login({ onToggleToSignUp, userType }: LoginProps) {
     try {
       const user = await login(email, password);
 
-      // Validate user type matches selection
       if (userType === 'parent' && user.role !== 'PARENT') {
         setError(
           'This account is not a parent account. Please use the child login option.'
