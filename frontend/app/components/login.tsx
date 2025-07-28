@@ -7,14 +7,14 @@ import Button from '../components/ui/button';
 
 interface LoginProps {
   onToggleToSignUp?: () => void;
+  userType?: 'parent' | 'child' | null;
 }
 
-export default function Login({ onToggleToSignUp }: LoginProps) {
+export default function Login({ onToggleToSignUp, userType }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  //const [showQuickLogin, setShowQuickLogin] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,13 +24,34 @@ export default function Login({ onToggleToSignUp }: LoginProps) {
 
     try {
       const user = await login(email, password);
+
+      if (userType === 'parent' && user.role !== 'PARENT') {
+        setError(
+          'This account is not a parent account. Please use the child login option.'
+        );
+        return;
+      }
+
+      if (userType === 'child' && user.role !== 'CHILD') {
+        setError(
+          'This account is not a child account. Please use the parent login option.'
+        );
+        return;
+      }
+
       if (user.role === 'PARENT') {
         router.push('/parent-dashboard');
       } else {
         router.push('/child-dashboard');
       }
     } catch (err) {
-      setError((err as Error).message);
+      if (userType === 'child') {
+        setError(
+          'Invalid credentials. Ask your parent to check your login details.'
+        );
+      } else {
+        setError((err as Error).message);
+      }
     } finally {
       setLoading(false);
     }
@@ -39,8 +60,17 @@ export default function Login({ onToggleToSignUp }: LoginProps) {
   return (
     <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Sign in</h1>
-        <p className="text-gray-600">Welcome back!</p>
+        <div className="text-6xl mb-4">
+          {userType === 'parent' ? '👨‍👩' : '👧👦'}
+        </div>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          {userType === 'parent' ? 'Parent Sign In' : 'Child Sign In'}
+        </h1>
+        <p className="text-gray-600">
+          {userType === 'parent'
+            ? 'Welcome back!'
+            : 'Ready to see your Tasks and make points?'}
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -53,7 +83,11 @@ export default function Login({ onToggleToSignUp }: LoginProps) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter your email"
+            placeholder={
+              userType === 'child'
+                ? 'Your parent gave you this email'
+                : 'Enter your email'
+            }
             required
           />
         </div>
@@ -67,7 +101,11 @@ export default function Login({ onToggleToSignUp }: LoginProps) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter your password"
+            placeholder={
+              userType === 'child'
+                ? 'Your parent gave you this password'
+                : 'Enter your password'
+            }
             required
           />
         </div>
@@ -87,67 +125,31 @@ export default function Login({ onToggleToSignUp }: LoginProps) {
         </Button>
       </form>
 
-      <div className="mt-6 text-center">
-        <p className="text-gray-600">
-          Don&apos;t have an account?{' '}
-          <button
-            onClick={onToggleToSignUp}
-            className="text-blue-600 hover:text-blue-700 font-medium"
-          >
-            Sign up
-          </button>
-        </p>
-      </div>
-      {/* 
-        {showQuickLogin && (
-          <>
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-sm text-gray-600">Quick Login (Demo)</p>
-                <button
-                  onClick={() => setShowQuickLogin(false)}
-                  className="text-xs text-gray-400 hover:text-gray-600"
-                >
-                  Hide
-                </button>
-              </div>
-              <div className="space-y-2">
-                {mockUsers.map((user) => (
-                  <button
-                    key={user.id}
-                    onClick={() => handleQuickSubmit(user.email)}
-                    disabled={loading}
-                    className="w-full text-left px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors flex items-center space-x-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <span className="text-2xl">{user.avatar}</span>
-                    <div>
-                      <div className="font-medium text-gray-800">
-                        {user.name}
-                      </div>
-                      <div className="text-sm text-gray-600 capitalize">
-                        {user.role}
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-              <p className="text-xs text-gray-500 text-center mt-4">
-                Password: password123
-              </p>
-            </div>
-          </>
-        )}
-
-        {!showQuickLogin && (
-          <div className="mt-6 text-center">
+      {userType === 'parent' && onToggleToSignUp && (
+        <div className="mt-6 text-center">
+          <p className="text-gray-600">
+            Don&apos;t have an account?{' '}
             <button
-              onClick={() => setShowQuickLogin(true)}
-              className="text-sm text-blue-600 hover:text-blue-700"
+              onClick={onToggleToSignUp}
+              className="text-blue-600 hover:text-blue-700 font-medium cursor-pointer"
             >
-              Show demo quick login
+              Sign up
             </button>
+          </p>
+        </div>
+      )}
+
+      {userType === 'child' && (
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <div className="text-center">
+            <p className="text-sm text-gray-500 mb-2">Are you a parent?</p>
+            <p className="text-xs text-gray-400">
+              Go back and select &quot;Parent&quot; to access parent features
+              and sign up options.
+            </p>
           </div>
-        )} */}
+        </div>
+      )}
     </div>
   );
 }

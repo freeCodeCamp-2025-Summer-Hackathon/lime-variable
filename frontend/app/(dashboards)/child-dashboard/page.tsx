@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getCurrentUser, logout } from '../../lib/auth';
-import { mockTasks, mockUsers } from '../../lib/mockData';
+import { getCurrentUser, logout, getStoredToken } from '../../lib/auth';
 import { TaskType, UserType } from '../../types';
 import {
   Clock,
@@ -20,7 +19,45 @@ export default function ChildDashboard() {
   const [tasks, setTasks] = useState<TaskType[]>([]);
   const [showPhotoUpload, setShowPhotoUpload] = useState<string | null>(null);
   const [taskPhotos, setTaskPhotos] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [error, setError] = useState('');
   const router = useRouter();
+  console.log(tasks, 'tasks');
+
+  const fetchTasks = async () => {
+    try {
+      const token = getStoredToken();
+      if (!token) {
+        throw new Error('No access token found');
+      }
+
+      const response = await fetch('/chores', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch tasks');
+      }
+
+      const fetchedTasks = await response.json();
+      setTasks(
+        fetchedTasks.map((task: TaskType) => ({
+          ...task,
+          status: task.status.toLowerCase(),
+        }))
+      );
+    } catch (err) {
+      console.error('Error fetching tasks:', err);
+      setError('Failed to load tasks');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const user = getCurrentUser();
@@ -29,19 +66,101 @@ export default function ChildDashboard() {
       return;
     }
     setCurrentUser(user);
-    setTasks(mockTasks.filter((t) => t.assignedTo === user.id));
+    fetchTasks();
   }, [router]);
+
+  // API call to update task status
+  const updateTaskStatus = async (
+    taskId: string,
+    newStatus: TaskType['status'],
+    proofPhoto?: string
+  ) => {
+    try {
+      setActionLoading(taskId);
+      const token = getStoredToken();
+      if (!token) {
+        throw new Error('No access token found');
+      }
+
+      let endpoint = '';
+      let body: any = {};
+
+      switch (newStatus) {
+        case 'in_progress':
+          endpoint = `/chores/${taskId}/start`;
+          body = { status: 'IN_PROGRESS' };
+          break;
+        case 'submitted':
+          endpoint = `/chores/${taskId}/submit`;
+          body = proofPhoto ? { proofPhoto } : {};
+          break;
+      }
+
+      const response = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update task');
+      }
+      
+      if (newStatus === 'in_progress') {
+        setTasks((prev) =>
+          prev.map((task) =>
+            task.id === taskId ? { ...task, status: 'in_progress' } : task
+          )
+        );
+      } else {
+        const updatedTask = await response.json();
+        setTasks((prev) =>
+          prev.map((task) =>
+            task.id === taskId
+              ? {
+                  ...task,
+                  ...updatedTask,
+                  status: updatedTask.status
+                    ? updatedTask.status.toLowerCase()
+                    : task.status,
+                }
+              : task
+          )
+        );
+      }
+
+      if (newStatus === 'submitted') {
+        setTaskPhotos((prev) => {
+          const updated = { ...prev };
+          delete updated[taskId];
+          return updated;
+        });
+      }
+
+      setError('');
+    } catch (err) {
+      console.error('Error updating task:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update task');
+      try {
+        await fetchTasks();
+      } catch (refetchError) {
+        console.error('Error refetching tasks:', refetchError);
+      }
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   const handleTaskStatusUpdate = (
     taskId: string,
     newStatus: TaskType['status'],
     proofPhoto?: string
   ) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === taskId ? { ...task, status: newStatus, proofPhoto } : task
-      )
-    );
+    updateTaskStatus(taskId, newStatus, proofPhoto);
   };
 
   const handlePhotoSelect = (taskId: string, photoUrl: string) => {
@@ -71,9 +190,6 @@ export default function ChildDashboard() {
     router.push('/');
   };
 
-  const getParentName = (parentId: string) => {
-    return mockUsers.find((u) => u.id === parentId)?.name || 'Unknown';
-  };
 
   const getStatusColor = (status: TaskType['status']) => {
     switch (status) {
@@ -167,109 +283,167 @@ export default function ChildDashboard() {
     },
   ];
 
-  const renderTaskCard = (task: TaskType) => (
-    <div
-      key={task.id}
-      className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
-    >
-      <div className="flex justify-between items-start mb-3">
-        <div>
-          <h3 className="font-semibold text-gray-800">{task.title}</h3>
-          <p className="text-sm text-gray-600 mb-2">{task.description}</p>
-          <div className="flex items-center space-x-4 text-sm text-gray-500">
-            <span>📅 Due: {task.dueDate}</span>
-            <span>⭐ Points: {task.points}</span>
-            <span>👤 From: {getParentName(task.assignedBy)}</span>
+  const renderTaskCard = (task: TaskType) => {
+    const isActionLoading = actionLoading === task.id;
+
+    return (
+      <div
+        key={task.id}
+        className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+      >
+        <div className="flex justify-between items-start mb-3">
+          <div>
+            <h3 className="font-semibold text-gray-800">{task.title}</h3>
+            <p className="text-sm text-gray-600 mb-2">{task.description}</p>
+            <div className="flex items-center space-x-4 text-sm text-gray-500">
+              <span>📅 Due: {task.dueDate}</span>
+              <span>⭐ Points: {task.points}</span>
+              <span>👤 From: {task.createdByUser?.name}</span>
+            </div>
           </div>
-        </div>
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-            task.status
-          )}`}
-        >
-          {task.status.replace('_', ' ')}
-        </span>
-      </div>
-
-      {task.feedback && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
-          <p className="text-sm text-red-700">
-            <strong>Feedback:</strong> {task.feedback}
-          </p>
-        </div>
-      )}
-
-      {/* Show selected photo if exists */}
-      {taskPhotos[task.id] && (
-        <div className="mt-3 flex items-start space-x-3">
-          <img
-            src={taskPhotos[task.id]}
-            alt="Task proof"
-            className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200"
-          />
-          <button
-            onClick={() => handleRemovePhoto(task.id)}
-            className="bg-red-100 text-red-700 px-3 py-1 rounded-lg hover:bg-red-200 transition-colors text-sm cursor-pointer"
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+              task.status
+            )}`}
           >
-            🗑️ Remove Photo
-          </button>
+            {task.status.replace('_', ' ')}
+          </span>
         </div>
-      )}
 
-      <div className="flex space-x-2 mt-3">
-        {task.status === 'pending' && (
-          <button
-            onClick={() => handleTaskStatusUpdate(task.id, 'in_progress')}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
-          >
-            🚀 Start Task
-          </button>
+        {task.feedback && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
+            <p className="text-sm text-red-700">
+              <strong>Feedback:</strong> {task.feedback}
+            </p>
+          </div>
         )}
 
-        {task.status === 'in_progress' && (
-          <>
+        {/* Show selected photo if exists */}
+        {taskPhotos[task.id] && (
+          <div className="mt-3 flex items-start space-x-3">
+            <img
+              src={taskPhotos[task.id]}
+              alt="Task proof"
+              className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200"
+            />
             <button
-              onClick={() => setShowPhotoUpload(task.id)}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                taskPhotos[task.id]
-                  ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                  : 'bg-purple-600 text-white hover:bg-purple-700 cursor-pointer'
-              }`}
+              onClick={() => handleRemovePhoto(task.id)}
+              className="bg-red-100 text-red-700 px-3 py-1 rounded-lg hover:bg-red-200 transition-colors text-sm cursor-pointer"
+              disabled={isActionLoading}
             >
-              📷 Add Photo
+              🗑️ Remove Photo
             </button>
+          </div>
+        )}
+
+        {/* Show existing proof photo if task has one */}
+        {task.proofPhoto && !taskPhotos[task.id] && (
+          <div className="mt-3">
+            <img
+              src={task.proofPhoto}
+              alt="Task proof"
+              className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200"
+            />
+          </div>
+        )}
+
+        <div className="flex space-x-2 mt-3">
+          {task.status === 'pending' && (
             <button
-              onClick={() => handleSubmitTask(task.id)}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors cursor-pointer"
+              onClick={() => handleTaskStatusUpdate(task.id, 'in_progress')}
+              disabled={isActionLoading}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
             >
-              Submit Task ➤
+              {isActionLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Starting...</span>
+                </>
+              ) : (
+                <>
+                  <span>🚀 Start Task</span>
+                </>
+              )}
             </button>
-          </>
-        )}
+          )}
 
-        {task.status === 'submitted' && (
-          <div className="bg-yellow-50 text-yellow-800 px-4 py-2 rounded-lg">
-            ⏳ Waiting for approval...
-          </div>
-        )}
+          {task.status === 'in_progress' && (
+            <>
+              <button
+                onClick={() => setShowPhotoUpload(task.id)}
+                disabled={isActionLoading}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  taskPhotos[task.id] || isActionLoading
+                    ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                    : 'bg-purple-600 text-white hover:bg-purple-700 cursor-pointer'
+                }`}
+              >
+                📷 Add Photo
+              </button>
+              <button
+                onClick={() => handleSubmitTask(task.id)}
+                disabled={isActionLoading}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              >
+                {isActionLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Submitting...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Submit Task ➤</span>
+                  </>
+                )}
+              </button>
+            </>
+          )}
 
-        {task.status === 'approved' && (
-          <div className="bg-green-50 text-green-800 px-4 py-2 rounded-lg">
-            ✅ Completed! +{task.points} points
-          </div>
-        )}
+          {task.status === 'submitted' && (
+            <div className="bg-yellow-50 text-yellow-800 px-4 py-2 rounded-lg">
+              ⏳ Waiting for approval...
+            </div>
+          )}
 
-        {task.status === 'rejected' && (
-          <button
-            onClick={() => handleTaskStatusUpdate(task.id, 'in_progress')}
-            className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors cursor-pointer"
-          >
-            🔄 Try Again
-          </button>
-        )}
+          {task.status === 'approved' && (
+            <div className="bg-green-50 text-green-800 px-4 py-2 rounded-lg">
+              ✅ Completed! +{task.points} points
+            </div>
+          )}
+
+          {task.status === 'rejected' && (
+            <button
+              onClick={() => handleTaskStatusUpdate(task.id, 'in_progress')}
+              disabled={isActionLoading}
+              className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            >
+              {isActionLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Restarting...</span>
+                </>
+              ) : (
+                <>
+                  <span>🔄 Try Again</span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600">Loading your tasks...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentUser) return <div>Loading...</div>;
 
@@ -303,6 +477,21 @@ export default function ChildDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="max-w-7xl mx-auto px-4 pt-4">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+            <button
+              onClick={() => setError('')}
+              className="float-right text-red-700 hover:text-red-900"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Stats Cards */}
