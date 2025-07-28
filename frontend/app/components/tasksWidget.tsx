@@ -167,7 +167,7 @@ const TasksWidget = ({
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="max-w-6xl mx-auto">
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h2 className="text-xl font-semibold text-blue-500 mb-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-6">
             All Tasks
           </h2>
 

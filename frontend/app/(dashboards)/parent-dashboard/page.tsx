@@ -162,7 +162,7 @@ export default function ParentDashboard() {
         <div className=" bg-gray-50 max-w-6xl mx-auto pt-6">
           <div className="bg-white p-6 rounded-lg shadow-sm ">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-purple-500">
+              <h2 className="text-xl font-semibold text-gray-800">
                 Family Members
               </h2>
               <Button
