@@ -1,9 +1,3 @@
-// export interface RegisterPayload {
-//   name: string;
-//   email: string;
-//   password: string;
-// }
-
 export interface RegisterResponse {
   data?: {
     id: string;
@@ -14,4 +8,9 @@ export interface RegisterResponse {
   message?: string[] | string;
   error?: string;
   statusCode?: number;
+}
+
+export type UserType = 'parent' | 'child';
+export interface LoginResponse {
+  access_token?: string;
 }
