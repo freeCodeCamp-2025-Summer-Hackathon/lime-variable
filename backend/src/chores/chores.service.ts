@@ -152,7 +152,6 @@ export class ChoresService {
     }
   }
 
-  // ! add filter and f=remove user
   async findAll(user: AuthenticatedUser) {
     if (!user.familyId)
       throw new BadRequestException('You must have a family to fetch chores');
@@ -160,10 +159,44 @@ export class ChoresService {
       const where: { familyId: string; assignedTo?: string } = {
         familyId: user.familyId,
       };
-      // if user was a child
+
+      // If user is a child, only show chores assigned to them
+      if (user.role === 'CHILD') {
+        where.assignedTo = user.id;
+      }
+      // If user is a parent, they can see all chores created
 
       const allChores = await this.prisma.chore.findMany({
         where,
+        include: {
+          assignedToUser: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+            },
+          },
+          createdByUser: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+            },
+          },
+          assignedByUser: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
       });
 
       return allChores;
@@ -177,6 +210,32 @@ export class ChoresService {
   async findOne(user: AuthenticatedUser, choreId: string) {
     const chore = await this.prisma.chore.findUnique({
       where: { id: choreId },
+      include: {
+        assignedToUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+        createdByUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+        assignedByUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
     });
 
     if (!chore) throw new NotFoundException('Chore does not exist');
@@ -184,6 +243,9 @@ export class ChoresService {
     if (user.familyId !== chore.familyId)
       throw new ForbiddenException('You do not have access to this resource');
 
+    if (user.role === 'CHILD' && chore.assignedTo !== user.id) {
+      throw new ForbiddenException('You can only view chores assigned to you');
+    }
     return chore;
   }
 
