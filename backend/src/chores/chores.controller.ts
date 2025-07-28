@@ -122,11 +122,7 @@ export class ChoresController {
   @Get()
   @UseGuards(RolesGuard)
   @Roles(UserRole.PARENT, UserRole.CHILD)
-  @ApiOperation({
-    summary: 'Get chores for the user',
-    description:
-      'Parents see all family chores, children see only their assigned chores',
-  })
+  @ApiOperation({ summary: 'Get all chores created by the user' })
   @ApiInternalServerErrorResponse({ description: 'Could not fetch chores' })
   findAll(@GetUser() user: AuthenticatedUser) {
     return this.choresService.findAll(user);
