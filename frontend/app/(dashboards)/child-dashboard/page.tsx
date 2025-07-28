@@ -271,7 +271,7 @@ export default function ChildDashboard() {
           <div>
             <h3 className="font-semibold text-gray-800">{task.title}</h3>
             <p className="text-sm text-gray-600 mb-2">{task.description}</p>
-            <div className="flex items-center space-x-4 text-sm text-gray-500">
+            <div className="flex items-center space-x-4 text-sm text-gray-600">
               <span>📅 Due: {formatDate(task.dueDate)}</span>
               <span>⭐ Points: {task.points}</span>
               <span>👤 From: {task.createdByUser?.name}</span>
