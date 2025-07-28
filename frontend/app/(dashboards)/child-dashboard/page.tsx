@@ -46,7 +46,7 @@ export default function ChildDashboard() {
 
       const fetchedTasks = await response.json();
       setTasks(
-        fetchedTasks.map((task) => ({
+        fetchedTasks.map((task: TaskType) => ({
           ...task,
           status: task.status.toLowerCase(),
         }))
