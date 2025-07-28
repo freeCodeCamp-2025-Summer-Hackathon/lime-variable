@@ -1,0 +1,9 @@
+import {} from '@/schemas/auth/register';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+export const api = process.env.NEXT_PUBLIC_API_URL;

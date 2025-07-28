@@ -7,14 +7,14 @@ import {
   logout,
   refreshUserData,
   getStoredToken,
-} from '../../lib/auth';
-import { UserType, TaskType } from '../../types';
-import TaskModal from '@/app/components/newTaskModal';
-import TaskForm from '@/app/components/task-form';
-import FamilyForm from '@/app/components/family-form';
-import AddMemberForm from '@/app/components/addMember-form';
-import TasksWidget from '@/app/components/tasksWidget';
-import Button from '@/app/components/ui/button';
+} from '@/lib/auth';
+import { UserType, TaskType } from '../../../types';
+import TaskModal from '@/components/newTaskModal';
+import TaskForm from '@/components/task-form';
+import FamilyForm from '@/components/family-form';
+import AddMemberForm from '@/components/addMember-form';
+import TasksWidget from '@/components/tasksWidget';
+import Button from '@/components/ui/button';
 
 export default function ParentDashboard() {
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);

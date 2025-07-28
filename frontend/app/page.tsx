@@ -1,8 +1,8 @@
 'use client';
 
+import Login from '@/components/login';
+import SignUp from '@/components/signUp';
 import { useState } from 'react';
-import Login from './components/login';
-import SignUp from './components/signUp';
 
 type UserType = 'parent' | 'child' | null;
 

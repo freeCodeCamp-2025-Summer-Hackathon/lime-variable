@@ -45,7 +45,9 @@ export class AuthController {
     description: 'The account created successfully.',
   })
   @ApiConflictResponse({ description: 'Email already exists.' })
-  registerUser(@Body() dto: RegisterUserDto): Promise<RegisterResponseDto> {
+  registerUser(
+    @Body() dto: RegisterUserDto,
+  ): Promise<{ data: RegisterResponseDto }> {
     return this.authService.registerUser(dto);
   }
 

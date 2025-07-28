@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { getCurrentUser, getStoredToken } from '../lib/auth';
-import Button from '@/app/components/ui/button';
+import Button from '@/components/ui/button';
 import { UserType } from '../types';
 
 interface AddMemberFormProps {

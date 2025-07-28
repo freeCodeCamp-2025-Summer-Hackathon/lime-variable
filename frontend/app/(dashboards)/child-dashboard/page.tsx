@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getCurrentUser, logout, getStoredToken } from '../../lib/auth';
-import { TaskType, UserType } from '../../types';
+import { getCurrentUser, logout, getStoredToken } from '@/lib/auth';
+import { TaskType, UserType } from '../../../types';
 import {
   Clock,
   CheckCircle,
@@ -12,7 +12,7 @@ import {
   Send,
   AlertCircle,
 } from 'lucide-react';
-import PhotoUploadModal from '@/app/components/photoUploadModal';
+import PhotoUploadModal from '@/components/photoUploadModal';
 
 export default function ChildDashboard() {
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
@@ -109,7 +109,7 @@ export default function ChildDashboard() {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to update task');
       }
-      
+
       if (newStatus === 'in_progress') {
         setTasks((prev) =>
           prev.map((task) =>
@@ -189,7 +189,6 @@ export default function ChildDashboard() {
     logout();
     router.push('/');
   };
-
 
   const getStatusColor = (status: TaskType['status']) => {
     switch (status) {

@@ -40,10 +40,12 @@ export class AuthService {
       const token = await this.generateAccessToken(user.id, user.email);
 
       return {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        access_token: token,
+        data: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          access_token: token,
+        },
       };
     } catch (error) {
       if (
