@@ -34,11 +34,6 @@ const TasksWidget = ({
       : tasks.filter((task) => task.status === activeTab);
   const submittedTasks = tasks.filter((task) => task.status === 'SUBMITTED');
 
-  const getUserName = (userId: string) => {
-    const user = users.find((user) => user.id === userId);
-    return user?.name ?? 'Unknown User';
-  };
-
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'pending':
@@ -318,7 +313,9 @@ const TasksWidget = ({
                         </div>
                       </td>
                       <td className="py-3 px-4 text-gray-600">
-                        {getUserName(task.assignedTo)}
+                        {task.assignedToUser
+                          ? task.assignedToUser.name
+                          : 'not assigned'}
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-1">
