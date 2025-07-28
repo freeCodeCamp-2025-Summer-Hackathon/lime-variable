@@ -443,7 +443,7 @@ export default function ChildDashboard() {
   }
 
   if (!currentUser) return <div>Loading...</div>;
-
+  console.log(currentUser, 'current');
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
       {/* Header */}
@@ -452,13 +452,13 @@ export default function ChildDashboard() {
           <div className="flex items-center space-x-4">
             <span className="text-2xl">{currentUser.avatar}</span>
             <div>
-              <h1 className="text-xl font-semibold text-gray-800">
-                <span>Hey</span>{' '}
+              <h1 className="text-xl font-semibold text-blue-600">
+                <span>Hey,</span>{' '}
                 <span>
-                  {currentUser.name ? `,${currentUser.name}` : '! 👋'}
+                  {currentUser.name ? `${currentUser.name}! 👋` : '! 👋'}
                 </span>
               </h1>
-              <p className="text-gray-600">Ready to earn some points?</p>
+              <p className="text-gray-800">Ready to earn some points?</p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
