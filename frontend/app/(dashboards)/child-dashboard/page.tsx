@@ -87,7 +87,8 @@ export default function ChildDashboard() {
 
       switch (newStatus) {
         case 'in_progress':
-          // endpoint = `/chores/${taskId}/start`;
+          endpoint = `/chores/${taskId}/start`;
+          body = { status: 'IN_PROGRESS' };
           break;
         case 'submitted':
           endpoint = `/chores/${taskId}/submit`;
@@ -96,7 +97,7 @@ export default function ChildDashboard() {
       }
 
       const response = await fetch(endpoint, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -108,17 +109,30 @@ export default function ChildDashboard() {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to update task');
       }
+      
+      if (newStatus === 'in_progress') {
+        setTasks((prev) =>
+          prev.map((task) =>
+            task.id === taskId ? { ...task, status: 'in_progress' } : task
+          )
+        );
+      } else {
+        const updatedTask = await response.json();
+        setTasks((prev) =>
+          prev.map((task) =>
+            task.id === taskId
+              ? {
+                  ...task,
+                  ...updatedTask,
+                  status: updatedTask.status
+                    ? updatedTask.status.toLowerCase()
+                    : task.status,
+                }
+              : task
+          )
+        );
+      }
 
-      const updatedTask = await response.json();
-
-      // Update the task in the local state
-      setTasks((prev) =>
-        prev.map((task) =>
-          task.id === taskId ? { ...task, ...updatedTask } : task
-        )
-      );
-
-      // If task was submitted, clear the photo from local state
       if (newStatus === 'submitted') {
         setTaskPhotos((prev) => {
           const updated = { ...prev };
@@ -127,10 +141,15 @@ export default function ChildDashboard() {
         });
       }
 
-      setError(''); // Clear any previous errors
+      setError('');
     } catch (err) {
       console.error('Error updating task:', err);
       setError(err instanceof Error ? err.message : 'Failed to update task');
+      try {
+        await fetchTasks();
+      } catch (refetchError) {
+        console.error('Error refetching tasks:', refetchError);
+      }
     } finally {
       setActionLoading(null);
     }
@@ -171,10 +190,6 @@ export default function ChildDashboard() {
     router.push('/');
   };
 
-  const getParentName = (parentId: string) => {
-    // This might need to be fetched from API or stored in task data
-    return 'Parent'; // Placeholder - you might want to fetch this from the task data
-  };
 
   const getStatusColor = (status: TaskType['status']) => {
     switch (status) {
@@ -283,7 +298,7 @@ export default function ChildDashboard() {
             <div className="flex items-center space-x-4 text-sm text-gray-500">
               <span>📅 Due: {task.dueDate}</span>
               <span>⭐ Points: {task.points}</span>
-              <span>👤 From: {getParentName(task.assignedBy)}</span>
+              <span>👤 From: {task.createdByUser?.name}</span>
             </div>
           </div>
           <span
