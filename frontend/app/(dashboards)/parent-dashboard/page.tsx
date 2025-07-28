@@ -71,7 +71,6 @@ export default function ParentDashboard() {
       return;
     }
     setCurrentUser(user);
-    console.log(user, 'user');
     if (!user.familyId) {
       setShowCreateFamilyButton(true);
       setTasksLoading(false);
@@ -185,7 +184,6 @@ export default function ParentDashboard() {
           <FamilyForm
             onCancel={closeModal}
             onSubmit={(familyData) => {
-              console.log('New family created:', familyData);
               if (familyData.id) {
                 refreshUserData();
                 setShowCreateFamilyButton(false);
@@ -199,8 +197,7 @@ export default function ParentDashboard() {
         <TaskModal onClose={closeModal}>
           <AddMemberForm
             onCancel={closeModal}
-            onSubmit={(memberData) => {
-              console.log('New member added:', memberData);
+            onSubmit={() => {
               closeModal();
               fetchFamilyMembers();
             }}

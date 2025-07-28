@@ -424,7 +424,7 @@ export default function ChildDashboard() {
   }
 
   if (!currentUser) return <div>Loading...</div>;
-  console.log(currentUser, 'current');
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
       {/* Header */}

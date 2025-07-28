@@ -30,8 +30,6 @@ export default function TaskForm({
   const [familyMembers, setFamilyMembers] = useState<
     Omit<UserType, 'avatar'>[] | null
   >(null);
-  console.log(familyMembers, 'familyMembers');
-  console.log('tasks user', currentUser);
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);

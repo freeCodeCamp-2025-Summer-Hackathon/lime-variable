@@ -26,8 +26,6 @@ const TasksWidget = ({
 }) => {
   const [activeTab, setActiveTab] = useState('all');
 
-  console.log(tasks, 'tasks');
-
   const filteredTasks =
     activeTab === 'all'
       ? tasks
