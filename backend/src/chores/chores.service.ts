@@ -174,8 +174,13 @@ export class ChoresService {
     if (userId !== chore.assignedTo)
       throw new UnauthorizedException('Only assigned user can start the chore');
 
-    if (chore.status !== ChoreStatus.PENDING)
-      throw new BadRequestException('Chore must be in pending status to start');
+    if (
+      chore.status !== ChoreStatus.PENDING &&
+      chore.status !== ChoreStatus.REJECTED
+    )
+      throw new BadRequestException(
+        'Chore must be in pending or rejected status to start',
+      );
 
     try {
       const updatedChore = await this.prisma.chore.update({

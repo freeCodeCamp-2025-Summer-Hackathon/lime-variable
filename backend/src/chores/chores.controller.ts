@@ -105,7 +105,7 @@ export class ChoresController {
     description: 'Only assigned user can start the chore',
   })
   @ApiBadRequestResponse({
-    description: 'Chore must be in pending status to start',
+    description: 'Chore must be in pending or rejected status to start',
   })
   @ApiInternalServerErrorResponse({
     description: 'Chore could not be started',
