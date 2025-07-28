@@ -13,6 +13,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import PhotoUploadModal from '@/app/components/photoUploadModal';
+import { formatDate } from '@/app/lib/formatDate';
 
 export default function ChildDashboard() {
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
