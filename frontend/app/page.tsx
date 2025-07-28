@@ -73,12 +73,12 @@ export default function Home() {
                 className="group bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 min-w-[280px]"
               >
                 <div className="text-6xl mb-4">👧👦</div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">Child</h3>
+                <h3 className="text-2xl font-bold text-blue-600 mb-2">Child</h3>
                 <p className="text-gray-600">
                   View your assigned chores, mark them as complete, and earn
                   rewards
                 </p>
-                <div className="mt-4 inline-flex items-center text-blue-600 font-medium group-hover:text-blue-700">
+                <div className="mt-4 inline-flex items-center text-blue-600 font-bold group-hover:text-blue-700">
                   Continue as Child
                   <svg
                     className="ml-2 w-4 h-4 transform group-hover:translate-x-1 transition-transform"
