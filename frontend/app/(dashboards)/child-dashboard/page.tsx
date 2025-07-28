@@ -23,7 +23,6 @@ export default function ChildDashboard() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
   const router = useRouter();
-  console.log(tasks, 'tasks');
 
   const fetchTasks = async () => {
     try {
@@ -69,7 +68,6 @@ export default function ChildDashboard() {
     fetchTasks();
   }, [router]);
 
-  // API call to update task status
   const updateTaskStatus = async (
     taskId: string,
     newStatus: TaskType['status'],
@@ -109,7 +107,7 @@ export default function ChildDashboard() {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to update task');
       }
-      
+
       if (newStatus === 'in_progress') {
         setTasks((prev) =>
           prev.map((task) =>
@@ -189,7 +187,6 @@ export default function ChildDashboard() {
     logout();
     router.push('/');
   };
-
 
   const getStatusColor = (status: TaskType['status']) => {
     switch (status) {
@@ -470,7 +467,7 @@ export default function ChildDashboard() {
             </div>
             <button
               onClick={handleLogout}
-              className="text-gray-600 hover:text-gray-800 transition-colors"
+              className="text-gray-600 hover:text-gray-800 transition-colors cursor-pointer"
             >
               Logout
             </button>
