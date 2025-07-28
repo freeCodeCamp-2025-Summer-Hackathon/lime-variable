@@ -29,7 +29,7 @@ export default function Home() {
             Family Chore Tracker
           </h1>
           <p className="text-xl text-gray-600 mb-12">
-            Organize your family's chores and build good habits together
+            Organize your family&apos;s chores and build good habits together
           </p>
 
           <div className="mb-8">
@@ -47,7 +47,7 @@ export default function Home() {
                   Parent
                 </h3>
                 <p className="text-gray-600">
-                  Manage your family's chores, create accounts for your
+                  Manage your family&apos;s chores, create accounts for your
                   children, and track progress
                 </p>
                 <div className="mt-4 inline-flex items-center text-blue-600 font-bold group-hover:text-blue-700">
@@ -152,7 +152,7 @@ export default function Home() {
               <p className="text-gray-600 mb-2">Ready to check your chores?</p>
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto mt-6">
                 <p className="text-sm text-blue-800">
-                  <strong>Don't have login credentials?</strong>
+                  <strong>Don&apos;t have login credentials?</strong>
                   <br />
                   Ask your parent to create an account for you from their
                   dashboard.
