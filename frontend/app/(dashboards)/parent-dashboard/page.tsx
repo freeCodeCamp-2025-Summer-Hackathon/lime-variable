@@ -127,8 +127,8 @@ export default function ParentDashboard() {
                 Parent Dashboard
               </h1>
               <p className="text-gray-600">
-                <span>Welcome back</span>{' '}
-                <span>{currentUser.name ? `,${currentUser.name}` : ''}!</span>
+                <span>Welcome back,</span>{' '}
+                <span>{currentUser.name ? `${currentUser.name}` : ''}!</span>
               </p>
             </div>
           </div>
