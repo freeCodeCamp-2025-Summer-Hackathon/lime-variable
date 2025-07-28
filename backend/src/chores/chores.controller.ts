@@ -29,6 +29,7 @@ import { ChoresService } from './chores.service';
 import { ApprovalChoreDto } from './dto/approve-chore.dto';
 import { AssignChoreDto } from './dto/assign-chore.dto';
 import { CreateChoreDto } from './dto/create-chore.dto';
+import { StartChoreDto } from './dto/start-chore.dto';
 import { UpdateChoreDto } from './dto/update-chore.dto';
 
 @UseGuards(JwtGuard)
@@ -95,6 +96,26 @@ export class ChoresController {
     @GetUser('id') userId: string,
   ) {
     return this.choresService.submit(choreId, userId);
+  }
+
+  @Patch(':id/start')
+  @ApiOperation({ summary: 'Start working on a chore (mark as in progress)' })
+  @ApiNotFoundResponse({ description: 'Chore does not exist' })
+  @ApiUnauthorizedResponse({
+    description: 'Only assigned user can start the chore',
+  })
+  @ApiBadRequestResponse({
+    description: 'Chore must be in pending status to start',
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Chore could not be started',
+  })
+  startChore(
+    @Param('id', ParseUUIDPipe) choreId: string,
+    @Body() StartChoreDto: StartChoreDto,
+    @GetUser('id') userId: string,
+  ) {
+    return this.choresService.start(choreId, userId);
   }
 
   @Patch(':id/approval')
