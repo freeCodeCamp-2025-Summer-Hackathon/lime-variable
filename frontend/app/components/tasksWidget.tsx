@@ -32,7 +32,7 @@ const TasksWidget = ({
     activeTab === 'all'
       ? tasks
       : tasks.filter((task) => task.status === activeTab);
-  const submittedTasks = tasks.filter((task) => task.status === 'submitted');
+  const submittedTasks = tasks.filter((task) => task.status === 'SUBMITTED');
 
   const getUserName = (userId: string) => {
     const user = users.find((user) => user.id === userId);
@@ -103,7 +103,6 @@ const TasksWidget = ({
       }
     } catch (err) {
       console.error('Error approving task:', err);
-      // You might want to show a toast notification here
     }
   };
 
@@ -137,7 +136,6 @@ const TasksWidget = ({
       }
     } catch (err) {
       console.error('Error rejecting task:', err);
-      // You might want to show a toast notification here
     }
   };
 
@@ -208,27 +206,27 @@ const TasksWidget = ({
                 {
                   key: 'pending',
                   label: 'Pending',
-                  count: tasks.filter((t) => t.status === 'pending').length,
+                  count: tasks.filter((t) => t.status === 'PENDING').length,
                 },
                 {
                   key: 'in_progress',
                   label: 'In Progress',
-                  count: tasks.filter((t) => t.status === 'in_progress').length,
+                  count: tasks.filter((t) => t.status === 'IN_PROGRESS').length,
                 },
                 {
                   key: 'submitted',
                   label: 'Submitted',
-                  count: tasks.filter((t) => t.status === 'submitted').length,
+                  count: tasks.filter((t) => t.status === 'SUBMITTED').length,
                 },
                 {
                   key: 'approved',
                   label: 'approved',
-                  count: tasks.filter((t) => t.status === 'approved').length,
+                  count: tasks.filter((t) => t.status === 'APPROVED').length,
                 },
                 {
                   key: 'rejected',
                   label: 'Rejected',
-                  count: tasks.filter((t) => t.status === 'rejected').length,
+                  count: tasks.filter((t) => t.status === 'REJECTED').length,
                 },
               ].map((tab) => (
                 <button
@@ -346,7 +344,7 @@ const TasksWidget = ({
                         </span>
                       </td>
                       <td className="py-4 px-4">
-                        {task.status === 'submitted' ? (
+                        {task.status === 'SUBMITTED' ? (
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleApprove(task.id)}

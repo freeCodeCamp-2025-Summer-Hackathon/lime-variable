@@ -27,7 +27,6 @@ export default function ParentDashboard() {
   const [tasksLoading, setTasksLoading] = useState(true);
   const [tasksError, setTasksError] = useState('');
 
-  console.log(tasks, 'tasks');
   const router = useRouter();
 
   // Fetch chores from the API
@@ -53,13 +52,8 @@ export default function ParentDashboard() {
         throw new Error('Failed to fetch chores');
       }
 
-      const chores = await response.json();
-      setTasks(
-        chores.map((chore: TaskType) => ({
-          ...chore,
-          status: chore.status.toLowerCase(),
-        }))
-      );
+      const fetchedChores = await response.json();
+      setTasks(fetchedChores);
     } catch (err) {
       setTasksError(
         err instanceof Error ? err.message : 'Failed to fetch chores'
@@ -80,7 +74,7 @@ export default function ParentDashboard() {
     console.log(user, 'user');
     if (!user.familyId) {
       setShowCreateFamilyButton(true);
-      setTasksLoading(false); // No need to load tasks if no family
+      setTasksLoading(false);
     } else {
       // Fetch family members and tasks when family exists
       fetchFamilyMembers();
@@ -195,7 +189,6 @@ export default function ParentDashboard() {
               if (familyData.id) {
                 refreshUserData();
                 setShowCreateFamilyButton(false);
-                // Start fetching tasks now that family exists
                 fetchChores();
               }
             }}
@@ -209,7 +202,6 @@ export default function ParentDashboard() {
             onSubmit={(memberData) => {
               console.log('New member added:', memberData);
               closeModal();
-              // Refresh family members list
               fetchFamilyMembers();
             }}
           />
@@ -223,7 +215,7 @@ export default function ParentDashboard() {
           users={familyMembers}
           loading={tasksLoading}
           error={tasksError}
-          onTaskStatusUpdate={fetchChores} // Refresh when task status changes
+          onTaskStatusUpdate={fetchChores}
         />
       )}
     </div>
