@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserType, TaskType } from '../types';
+import { TaskType } from '../types';
 import { getStoredToken } from '../lib/auth';
 import {
   Clock,
@@ -13,31 +13,22 @@ import {
 
 const TasksWidget = ({
   tasks,
-  users,
   loading,
   error,
   onTaskStatusUpdate,
 }: {
   tasks: TaskType[];
-  users: UserType[];
   loading: boolean;
   error: string;
   onTaskStatusUpdate?: () => void;
 }) => {
   const [activeTab, setActiveTab] = useState('all');
 
-  console.log(tasks, 'tasks');
-
   const filteredTasks =
     activeTab === 'all'
       ? tasks
       : tasks.filter((task) => task.status === activeTab);
-  const submittedTasks = tasks.filter((task) => task.status === 'submitted');
-
-  const getUserName = (userId: string) => {
-    const user = users.find((user) => user.id === userId);
-    return user?.name ?? 'Unknown User';
-  };
+  const submittedTasks = tasks.filter((task) => task.status === 'SUBMITTED');
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -103,7 +94,6 @@ const TasksWidget = ({
       }
     } catch (err) {
       console.error('Error approving task:', err);
-      // You might want to show a toast notification here
     }
   };
 
@@ -137,7 +127,6 @@ const TasksWidget = ({
       }
     } catch (err) {
       console.error('Error rejecting task:', err);
-      // You might want to show a toast notification here
     }
   };
 
@@ -208,27 +197,27 @@ const TasksWidget = ({
                 {
                   key: 'pending',
                   label: 'Pending',
-                  count: tasks.filter((t) => t.status === 'pending').length,
+                  count: tasks.filter((t) => t.status === 'PENDING').length,
                 },
                 {
                   key: 'in_progress',
                   label: 'In Progress',
-                  count: tasks.filter((t) => t.status === 'in_progress').length,
+                  count: tasks.filter((t) => t.status === 'IN_PROGRESS').length,
                 },
                 {
                   key: 'submitted',
                   label: 'Submitted',
-                  count: tasks.filter((t) => t.status === 'submitted').length,
+                  count: tasks.filter((t) => t.status === 'SUBMITTED').length,
                 },
                 {
                   key: 'approved',
                   label: 'approved',
-                  count: tasks.filter((t) => t.status === 'approved').length,
+                  count: tasks.filter((t) => t.status === 'APPROVED').length,
                 },
                 {
                   key: 'rejected',
                   label: 'Rejected',
-                  count: tasks.filter((t) => t.status === 'rejected').length,
+                  count: tasks.filter((t) => t.status === 'REJECTED').length,
                 },
               ].map((tab) => (
                 <button
@@ -319,8 +308,10 @@ const TasksWidget = ({
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-gray-600">
-                        {getUserName(task.assignedTo)}
+                      <td className="py-3 px-4 text-gray-600 text-left">
+                        {task.assignedToUser
+                          ? task.assignedToUser.name
+                          : 'not assigned'}
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-1">
@@ -346,7 +337,7 @@ const TasksWidget = ({
                         </span>
                       </td>
                       <td className="py-4 px-4">
-                        {task.status === 'submitted' ? (
+                        {task.status === 'SUBMITTED' ? (
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleApprove(task.id)}

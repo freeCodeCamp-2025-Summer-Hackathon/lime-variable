@@ -27,7 +27,6 @@ export default function ParentDashboard() {
   const [tasksLoading, setTasksLoading] = useState(true);
   const [tasksError, setTasksError] = useState('');
 
-  console.log(tasks, 'tasks');
   const router = useRouter();
 
   // Fetch chores from the API
@@ -53,13 +52,8 @@ export default function ParentDashboard() {
         throw new Error('Failed to fetch chores');
       }
 
-      const chores = await response.json();
-      setTasks(
-        chores.map((chore: TaskType) => ({
-          ...chore,
-          status: chore.status.toLowerCase(),
-        }))
-      );
+      const fetchedChores = await response.json();
+      setTasks(fetchedChores);
     } catch (err) {
       setTasksError(
         err instanceof Error ? err.message : 'Failed to fetch chores'
@@ -77,10 +71,9 @@ export default function ParentDashboard() {
       return;
     }
     setCurrentUser(user);
-    console.log(user, 'user');
     if (!user.familyId) {
       setShowCreateFamilyButton(true);
-      setTasksLoading(false); // No need to load tasks if no family
+      setTasksLoading(false);
     } else {
       // Fetch family members and tasks when family exists
       fetchFamilyMembers();
@@ -134,28 +127,16 @@ export default function ParentDashboard() {
                 Parent Dashboard
               </h1>
               <p className="text-gray-600">
-                <span>Welcome back</span>{' '}
-                <span>{currentUser.name ? `,${currentUser.name}` : ''}!</span>
+                <span>Welcome back,</span>{' '}
+                <span>{currentUser.name ? `${currentUser.name}` : ''}!</span>
               </p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
             {!showCreateFamilyButton && (
-              <>
-                <Button
-                  className="min-w-32"
-                  onClick={() => setOpenAddMemberModal(true)}
-                  variant="purple"
-                >
-                  + Add Members
-                </Button>
-                <Button
-                  className="flex-1"
-                  onClick={() => setOpenTaskModal(true)}
-                >
-                  + Create Task
-                </Button>
-              </>
+              <Button className="flex-1" onClick={() => setOpenTaskModal(true)}>
+                + Create Task
+              </Button>
             )}
             {showCreateFamilyButton && (
               <Button
@@ -176,6 +157,52 @@ export default function ParentDashboard() {
         </div>
       </div>
 
+      {/* Family Members Section */}
+      {!showCreateFamilyButton && familyMembers.length > 0 && (
+        <div className=" bg-gray-50 max-w-6xl mx-auto pt-6">
+          <div className="bg-white p-6 rounded-lg shadow-sm ">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-gray-800">
+                Family Members
+              </h2>
+              <Button
+                className="min-w-32"
+                onClick={() => setOpenAddMemberModal(true)}
+                variant="purple"
+              >
+                + Add Members
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {familyMembers.map((member) => (
+                <div
+                  key={member.id}
+                  className="flex flex-col items-center p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-xl mb-2">
+                    {member.avatar || member.name?.charAt(0) || 'U'}
+                  </div>
+                  <p className="font-medium text-center">{member.name}</p>
+                  <p className="text-sm text-gray-500 text-center">
+                    {member.role === 'CHILD' ? 'Child' : 'Parent'}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tasks Widget */}
+      {!showCreateFamilyButton && (
+        <TasksWidget
+          tasks={tasks}
+          loading={tasksLoading}
+          error={tasksError}
+          onTaskStatusUpdate={fetchChores}
+        />
+      )}
+
       {/* Modals */}
       {openTaskModal && (
         <TaskModal onClose={closeModal}>
@@ -191,11 +218,9 @@ export default function ParentDashboard() {
           <FamilyForm
             onCancel={closeModal}
             onSubmit={(familyData) => {
-              console.log('New family created:', familyData);
               if (familyData.id) {
                 refreshUserData();
                 setShowCreateFamilyButton(false);
-                // Start fetching tasks now that family exists
                 fetchChores();
               }
             }}
@@ -206,25 +231,12 @@ export default function ParentDashboard() {
         <TaskModal onClose={closeModal}>
           <AddMemberForm
             onCancel={closeModal}
-            onSubmit={(memberData) => {
-              console.log('New member added:', memberData);
+            onSubmit={() => {
               closeModal();
-              // Refresh family members list
               fetchFamilyMembers();
             }}
           />
         </TaskModal>
-      )}
-
-      {/* Tasks Widget */}
-      {!showCreateFamilyButton && (
-        <TasksWidget
-          tasks={tasks}
-          users={familyMembers}
-          loading={tasksLoading}
-          error={tasksError}
-          onTaskStatusUpdate={fetchChores} // Refresh when task status changes
-        />
       )}
     </div>
   );

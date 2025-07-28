@@ -13,6 +13,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import PhotoUploadModal from '@/app/components/photoUploadModal';
+import { formatDate } from '@/app/lib/formatDate';
 
 export default function ChildDashboard() {
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
@@ -23,7 +24,6 @@ export default function ChildDashboard() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
   const router = useRouter();
-  console.log(tasks, 'tasks');
 
   const fetchTasks = async () => {
     try {
@@ -45,12 +45,7 @@ export default function ChildDashboard() {
       }
 
       const fetchedTasks = await response.json();
-      setTasks(
-        fetchedTasks.map((task: TaskType) => ({
-          ...task,
-          status: task.status.toLowerCase(),
-        }))
-      );
+      setTasks(fetchedTasks);
     } catch (err) {
       console.error('Error fetching tasks:', err);
       setError('Failed to load tasks');
@@ -69,7 +64,6 @@ export default function ChildDashboard() {
     fetchTasks();
   }, [router]);
 
-  // API call to update task status
   const updateTaskStatus = async (
     taskId: string,
     newStatus: TaskType['status'],
@@ -83,14 +77,14 @@ export default function ChildDashboard() {
       }
 
       let endpoint = '';
-      let body: any = {};
+      let body: unknown = {};
 
       switch (newStatus) {
-        case 'in_progress':
+        case 'IN_PROGRESS':
           endpoint = `/chores/${taskId}/start`;
           body = { status: 'IN_PROGRESS' };
           break;
-        case 'submitted':
+        case 'SUBMITTED':
           endpoint = `/chores/${taskId}/submit`;
           body = proofPhoto ? { proofPhoto } : {};
           break;
@@ -109,31 +103,14 @@ export default function ChildDashboard() {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to update task');
       }
-      
-      if (newStatus === 'in_progress') {
-        setTasks((prev) =>
-          prev.map((task) =>
-            task.id === taskId ? { ...task, status: 'in_progress' } : task
-          )
-        );
-      } else {
-        const updatedTask = await response.json();
-        setTasks((prev) =>
-          prev.map((task) =>
-            task.id === taskId
-              ? {
-                  ...task,
-                  ...updatedTask,
-                  status: updatedTask.status
-                    ? updatedTask.status.toLowerCase()
-                    : task.status,
-                }
-              : task
-          )
-        );
-      }
 
-      if (newStatus === 'submitted') {
+      setTasks((prev) =>
+        prev.map((task) =>
+          task.id === taskId ? { ...task, status: newStatus } : task
+        )
+      );
+
+      if (newStatus === 'SUBMITTED') {
         setTaskPhotos((prev) => {
           const updated = { ...prev };
           delete updated[taskId];
@@ -178,7 +155,7 @@ export default function ChildDashboard() {
 
   const handleSubmitTask = (taskId: string) => {
     const photoUrl = taskPhotos[taskId];
-    handleTaskStatusUpdate(taskId, 'submitted', photoUrl);
+    handleTaskStatusUpdate(taskId, 'SUBMITTED', photoUrl);
   };
 
   const handleModalClose = () => {
@@ -190,18 +167,17 @@ export default function ChildDashboard() {
     router.push('/');
   };
 
-
   const getStatusColor = (status: TaskType['status']) => {
     switch (status) {
-      case 'pending':
+      case 'PENDING':
         return 'bg-gray-100 text-gray-800';
-      case 'in_progress':
+      case 'IN_PROGRESS':
         return 'bg-blue-100 text-blue-800';
-      case 'submitted':
+      case 'SUBMITTED':
         return 'bg-yellow-100 text-yellow-800';
-      case 'approved':
+      case 'APPROVED':
         return 'bg-green-100 text-green-800';
-      case 'rejected':
+      case 'REJECTED':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -210,11 +186,11 @@ export default function ChildDashboard() {
 
   // Group tasks by status
   const tasksByStatus = {
-    pending: tasks.filter((t) => t.status === 'pending'),
-    in_progress: tasks.filter((t) => t.status === 'in_progress'),
-    submitted: tasks.filter((t) => t.status === 'submitted'),
-    rejected: tasks.filter((t) => t.status === 'rejected'),
-    completed: tasks.filter((t) => t.status === 'approved'),
+    pending: tasks.filter((t) => t.status === 'PENDING'),
+    in_progress: tasks.filter((t) => t.status === 'IN_PROGRESS'),
+    submitted: tasks.filter((t) => t.status === 'SUBMITTED'),
+    rejected: tasks.filter((t) => t.status === 'REJECTED'),
+    completed: tasks.filter((t) => t.status === 'APPROVED'),
   };
 
   const totalPoints = currentUser?.points || 0;
@@ -295,8 +271,8 @@ export default function ChildDashboard() {
           <div>
             <h3 className="font-semibold text-gray-800">{task.title}</h3>
             <p className="text-sm text-gray-600 mb-2">{task.description}</p>
-            <div className="flex items-center space-x-4 text-sm text-gray-500">
-              <span>📅 Due: {task.dueDate}</span>
+            <div className="flex items-center space-x-4 text-sm text-gray-600">
+              <span>📅 Due: {formatDate(task.dueDate)}</span>
               <span>⭐ Points: {task.points}</span>
               <span>👤 From: {task.createdByUser?.name}</span>
             </div>
@@ -306,7 +282,7 @@ export default function ChildDashboard() {
               task.status
             )}`}
           >
-            {task.status.replace('_', ' ')}
+            {task.status.replace('_', ' ').toLowerCase()}
           </span>
         </div>
 
@@ -321,6 +297,7 @@ export default function ChildDashboard() {
         {/* Show selected photo if exists */}
         {taskPhotos[task.id] && (
           <div className="mt-3 flex items-start space-x-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={taskPhotos[task.id]}
               alt="Task proof"
@@ -339,6 +316,7 @@ export default function ChildDashboard() {
         {/* Show existing proof photo if task has one */}
         {task.proofPhoto && !taskPhotos[task.id] && (
           <div className="mt-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={task.proofPhoto}
               alt="Task proof"
@@ -348,9 +326,9 @@ export default function ChildDashboard() {
         )}
 
         <div className="flex space-x-2 mt-3">
-          {task.status === 'pending' && (
+          {task.status === 'PENDING' && (
             <button
-              onClick={() => handleTaskStatusUpdate(task.id, 'in_progress')}
+              onClick={() => handleTaskStatusUpdate(task.id, 'IN_PROGRESS')}
               disabled={isActionLoading}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
             >
@@ -367,7 +345,7 @@ export default function ChildDashboard() {
             </button>
           )}
 
-          {task.status === 'in_progress' && (
+          {task.status === 'IN_PROGRESS' && (
             <>
               <button
                 onClick={() => setShowPhotoUpload(task.id)}
@@ -399,21 +377,21 @@ export default function ChildDashboard() {
             </>
           )}
 
-          {task.status === 'submitted' && (
+          {task.status === 'SUBMITTED' && (
             <div className="bg-yellow-50 text-yellow-800 px-4 py-2 rounded-lg">
               ⏳ Waiting for approval...
             </div>
           )}
 
-          {task.status === 'approved' && (
+          {task.status === 'APPROVED' && (
             <div className="bg-green-50 text-green-800 px-4 py-2 rounded-lg">
               ✅ Completed! +{task.points} points
             </div>
           )}
 
-          {task.status === 'rejected' && (
+          {task.status === 'REJECTED' && (
             <button
-              onClick={() => handleTaskStatusUpdate(task.id, 'in_progress')}
+              onClick={() => handleTaskStatusUpdate(task.id, 'IN_PROGRESS')}
               disabled={isActionLoading}
               className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
             >
@@ -455,13 +433,13 @@ export default function ChildDashboard() {
           <div className="flex items-center space-x-4">
             <span className="text-2xl">{currentUser.avatar}</span>
             <div>
-              <h1 className="text-xl font-semibold text-gray-800">
-                <span>Hey</span>{' '}
+              <h1 className="text-xl font-semibold text-blue-600">
+                <span>Hey,</span>{' '}
                 <span>
-                  {currentUser.name ? `,${currentUser.name}` : '! 👋'}
+                  {currentUser.name ? `${currentUser.name}! 👋` : '! 👋'}
                 </span>
               </h1>
-              <p className="text-gray-600">Ready to earn some points?</p>
+              <p className="text-gray-800">Ready to earn some points?</p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
@@ -470,7 +448,7 @@ export default function ChildDashboard() {
             </div>
             <button
               onClick={handleLogout}
-              className="text-gray-600 hover:text-gray-800 transition-colors"
+              className="text-gray-600 hover:text-gray-800 transition-colors cursor-pointer"
             >
               Logout
             </button>
